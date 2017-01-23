@@ -1,47 +1,34 @@
 #include <string>
 #include <iostream>
 
-int key = 123456789;
-
-class encrypt_ram {
-	private:
-		std::string key = "94307803947898";
-	public:
-		std::string name = "sammy";
-		std::string encrypt(std::string value) {  //simple XOR stream cipher, key needs to be as long as value (need to pad if not)
-			for (int x = 0; x < value.size(); x++) {
-				value[x] ^= key[x];
-			}
-			return value;
-		}
-		std::string decrypt(std::string value) {
-			return encrypt(value);
-		}
-};
-
 void anyKey();
+
+std::string key = "94307803947898";
 
 int main()
 {
 
-	//int* newFindMe = new int(94875);
-	encrypt_ram* er = new encrypt_ram();
-	anyKey();
-	while (1) {
-		//so this repeatedly encrypts/decrypts, and shows the problem of multiple instances of "sammy" in memory after multiple iterations.
+        std::string message =  "Sammy"; //value is exposed in memory
 
-		std::string temp = "not set";
-		std::cout << "Value: " << er->name<< std::endl;
-		er->name  = er->encrypt(er->name);
-		std::cout << "Encrypted Value: " << er->name<< std::endl;
+        for (int x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
+        }
 
+        //value is encrypted in memory
+
+        std::cout << "Encrypted: " << message<< std::endl;
+        anyKey();
 
 
-		anyKey();
+        for (int x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
 
+        std::cout << "Decrypted: " << message<< std::endl;//value is exposed in memory
+        anyKey();
+
+        std::cout<< "cleared decrypted value"; //need to re-decrypt to access again, needs to be cleared to get out of memory
+        message = "";
+        anyKey();
 
 	}
-	delete er;
 	return 0;
 }
 

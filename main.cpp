@@ -2,6 +2,7 @@
 #include <iostream>
 
 bool anyKey();
+void bitwiseSplit(unsigned int input, unsigned short &leftDigits, unsigned short &rightDigits);
 
 class encrypt_ram{
     private:
@@ -15,6 +16,8 @@ class encrypt_ram{
         }
 
 };
+
+unsigned int testInput = 43522;//10101010 00000010
 
 int main()
 {
@@ -46,15 +49,14 @@ int main()
             done = anyKey();
         }
     }
-
-
-
+    //unsigned short ld, rd;
+    //bitwiseSplit(testInput,ld,rd);
     delete er;
 	return 0;
 }
 
 
-//we probably want some functionality to clear all variable values on exit.
+//we probably want some functionality to clear all variable values on exit??
 
 bool anyKey()
 {
@@ -69,8 +71,16 @@ bool anyKey()
     else{
         std::getline(std::cin, c);
         return false;
-
     }
 
+}
+
+
+void bitwiseSplit(unsigned int input, unsigned short &leftDigits, unsigned short &rightDigits){
+    //splits 16 bit unsigned integer into two 8 bit shorts, the left and right containing respective bits
+    leftDigits = input >> 8;  // this 8 is the split value of # of bits you have, we started with 16 so 16/2=8
+    rightDigits = input & 255; // this is the max value for the lower end, so 2^split value-1=2^8-1=255
+    //std::cout << "leftDigits: " << leftDigits << std::endl;
+    //std::cout << "rightDigits: " << rightDigits << std::endl;
 }
 

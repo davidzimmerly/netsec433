@@ -3,8 +3,9 @@
 #include <cmath>
 
 bool anyKey();
-void bitwiseSplit(unsigned long long &input, unsigned long &leftDigits, unsigned long &rightDigits);
+void bitwiseSplit(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits);
 void bitwiseSplit(unsigned int &input, unsigned short &leftDigits, unsigned short &rightDigits);
+void bitwiseSplitDES(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits);
 void setBit(unsigned long long &input, int bit, bool value){ input |= value << bit; }
 void setBit(unsigned int &input, int bit, bool value){ input |= value << bit; }
 void setBit(unsigned short &input, int bit, bool value){ input |= value << bit; }
@@ -18,13 +19,15 @@ bool checkBit(unsigned long long &input, int bit){ return (input>>bit)&1;}
 bool checkBit(unsigned int &input, int bit){ return (input>>bit)&1;}
 bool checkBit(unsigned short &input, int bit){ return (input>>bit)&1;}
 void changeBit(unsigned long long &input, unsigned long long bit, bool value){ unsigned long long one = 1; input ^= (-value ^input) & (one << bit);}
-/*void changeBit(unsigned int &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
-void changeBit(unsigned short &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}*/
+void changeBit(unsigned int &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
+void changeBit(unsigned short &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
 unsigned long long* permuteKey(unsigned long long &input);
 void displayBinary(unsigned long long input);
 void displayBinary(unsigned int input);
+void displayBinary28(unsigned int input);
 void displayBinary(unsigned short input);
-
+void displayBinary(unsigned long input);
+void leftShift(unsigned int &input);
 
 class encrypt_ram{
     private:
@@ -76,14 +79,33 @@ int main()
     //unsigned short ld, rd;
     */
     unsigned long long des_key = 1383827165325090801;
-    unsigned long long* permutation1 = new unsigned long long;
+    unsigned long long* permutation1;
     permutation1 = permuteKey(des_key);
-    //setBit()
     displayBinary(*permutation1);
     std::cout << std::endl;
     std::cout << *permutation1 << std::endl;
-    //changeBit(*permutation1, 2, 1);
-    //std::cout << *permutation1 << std::endl;
+    unsigned int C[16], D[16];
+    bitwiseSplitDES(*permutation1,C[0],D[0]);//this is the initial split
+
+    //creates 16 48-bit subkeys (extra bits are cleared at left for easy c++)
+    for (int x=1; x<=16; x++){
+        //left shift
+        C[x] = C[x-1];
+        D[x] = D[x-1];
+        leftShift(C[x]);
+        leftShift(D[x]);
+
+        if (x>=3 && x!=16 && x!=9){
+            leftShift(C[x]);
+            leftShift(D[x]);
+
+        }
+
+    }
+
+
+
+
     delete er;
     delete permutation1;
 	return 0;
@@ -91,6 +113,16 @@ int main()
 
 
 //we probably want some functionality to clear all variable values on exit??
+void leftShift(unsigned int &input){
+    bool bit = checkBit(input,27);
+    input= input<<1;
+    setBit(input,0,bit);
+    clearBit(input,28);
+
+
+
+}
+
 
 bool anyKey()
 {
@@ -116,6 +148,14 @@ const int pc_1 [56] = { 57,   49,    41,   33,    25,    17,    9,
                         7,   62,    54 ,  46,    38,    30,   22,
                         14,    6,    61,   53,    45,    37,   29,
                         21,   13,     5,   28,    20,    12,    4 };
+const int pc_2 [48] = {  14,    17,   11,    24,     1,    5,
+                          3,    28,   15,     6,    21,   10,
+                         23,    19,   12,     4,    26,    8,
+                         16,     7,   27,    20,    13,    2,
+                         41,    52,   31,    37,    47,   55,
+                         30,    40,   51,    45,    33,   48,
+                         44,    49,   39,    56,    34,   53,
+                         46,    42,   50,    36,    29,   32 };
 
 unsigned long long* permuteKey(unsigned long long &input){
     unsigned long long* permutation= new unsigned long long;
@@ -136,6 +176,12 @@ void displayBinary(unsigned int input){
         std::cout << checkBit(input,x);
     std::cout << std::endl;
 }
+void displayBinary28(unsigned int input){
+    for (int x=27; x>=0; x--)
+        std::cout << checkBit(input,x);
+    std::cout << std::endl;
+}
+
 void displayBinary(unsigned short input){
     for (int x=15; x>=0; x--)
         std::cout << checkBit(input,x);
@@ -143,9 +189,10 @@ void displayBinary(unsigned short input){
 }
 
 
-void bitwiseSplit(unsigned long long input, unsigned long &leftDigits, unsigned long &rightDigits){
+void bitwiseSplit(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits){
     //64 bit  => 32 x 2 version
     //splits unsigned long long into two  bit shorts, the left and right containing respective bits
+    //probably should eventually hard code these values for efficiency since function isn't modular
     int bits = 64;
     unsigned long long leftShift = bits/2;
     unsigned long long rightMask = (unsigned long long)pow(2.0,leftShift)-1;
@@ -153,13 +200,22 @@ void bitwiseSplit(unsigned long long input, unsigned long &leftDigits, unsigned 
     rightDigits = input & rightMask;
 }
 
-void bitwiseSplit(unsigned int input, unsigned short &leftDigits, unsigned short &rightDigits){
+void bitwiseSplit(unsigned int &input, unsigned short &leftDigits, unsigned short &rightDigits){
     //32 bit  => 16 x 2 version
     //splits unsigned integer into two  bit shorts, the left and right containing respective bits
     int bits = 32;
     unsigned int leftShift = bits/2;
     unsigned int rightMask = (unsigned int)pow(2.0,leftShift)-1;
     leftDigits = input >> leftShift;
+    rightDigits = input & rightMask;
+}
+
+void bitwiseSplitDES(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits){
+    //56(64) bit  => 28(32) x 2 version
+
+    leftDigits = input >> 28;
+    unsigned long rightMask = 268435455;
+    //leftDigits = input >> leftShift;
     rightDigits = input & rightMask;
 }
 

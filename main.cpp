@@ -1,11 +1,25 @@
 #include <string>
 #include <iostream>
-//#include <bitset>
-#include <climits>
 #include <cmath>
 
 bool anyKey();
 void bitwiseSplit(unsigned long long input, unsigned long &leftDigits, unsigned long &rightDigits);
+void bitwiseSplit(unsigned int input, unsigned short &leftDigits, unsigned short &rightDigits);
+void setBit(unsigned long long &input, int bit, bool value){ input |= value << bit; }
+void setBit(unsigned int &input, int bit, bool value){ input |= value << bit; }
+void setBit(unsigned short &input, int bit, bool value){ input |= value << bit; }
+void clearBit(unsigned long long &input, int bit){ input &= ~(1 << bit ); }
+void clearBit(unsigned int &input, int bit){ input &= ~(1 << bit ); }
+void clearBit(unsigned short &input, int bit){ input &= ~(1 << bit ); }
+void toggleBit(unsigned long long &input, int bit){ input ^= 1 << bit ; }
+void toggleBit(unsigned int &input, int bit){ input ^= 1 << bit ; }
+void toggleBit(unsigned short &input, int bit){ input ^= 1 << bit ; }
+bool checkBit(unsigned long long &input, int bit){ return (input>>bit)&1;}
+bool checkBit(unsigned int &input, int bit){ return (input>>bit)&1;}
+bool checkBit(unsigned short &input, int bit){ return (input>>bit)&1;}
+void changeBit(unsigned long long &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
+void changeBit(unsigned int &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
+void changeBit(unsigned short &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
 
 class encrypt_ram{
     private:
@@ -20,8 +34,8 @@ class encrypt_ram{
 
 };
 
-unsigned long long testInput = 17343092720046919925;//1111000010101111000010101111000011110101000011110101000011110101
-//4038045445;//11110000101011111010111100000101
+unsigned long long testInput = 17343092720046919924;//1111000010101111000010101111000011110101000011110101000011110101
+
 
 
 int main()
@@ -56,10 +70,6 @@ int main()
     }
     //unsigned short ld, rd;
     */
-    unsigned long ld,rd;
-    bitwiseSplit(testInput,ld,rd);
-
-    //std::cout << "llong size:" << sizeof(long long)<< std:: endl;
 
     delete er;
 	return 0;
@@ -82,25 +92,26 @@ bool anyKey()
         std::getline(std::cin, c);
         return false;
     }
-
 }
 
-
-
-
-
 void bitwiseSplit(unsigned long long input, unsigned long &leftDigits, unsigned long &rightDigits){
-    //splits unsigned integer into two  bit shorts, the left and right containing respective bits
-    //tested on 16, 32 and 64 bit , but need particular inputs for each so make another function if you need 32 bit or less inputs(change input sizes and bits variable)
+    //64 bit  => 32 x 2 version
+    //splits unsigned long long into two  bit shorts, the left and right containing respective bits
     int bits = 64;
     unsigned long long leftShift = bits/2;
     unsigned long long rightMask = (unsigned long long)pow(2.0,leftShift)-1;
-
-    std::cout << "rightMask: " << rightMask << std::endl;
-    // left 8 right 255 // left 16 right 65535
-    leftDigits = input >> leftShift;  // this 8 is the split value of # of bits you have, we started with 16 so 16/2=8
-    rightDigits = input & rightMask; // this is the max value for the lower end, so 2^split value-1=2^8-1=255
-    std::cout << "leftDigits: " << leftDigits << std::endl;
-    std::cout << "rightDigits: " << rightDigits << std::endl;
+    leftDigits = input >> leftShift;
+    rightDigits = input & rightMask;
 }
+
+void bitwiseSplit(unsigned int input, unsigned short &leftDigits, unsigned short &rightDigits){
+    //32 bit  => 16 x 2 version
+    //splits unsigned integer into two  bit shorts, the left and right containing respective bits
+    int bits = 32;
+    unsigned int leftShift = bits/2;
+    unsigned int rightMask = (unsigned int)pow(2.0,leftShift)-1;
+    leftDigits = input >> leftShift;
+    rightDigits = input & rightMask;
+}
+
 

@@ -3,8 +3,8 @@
 #include <cmath>
 
 bool anyKey();
-void bitwiseSplit(unsigned long long input, unsigned long &leftDigits, unsigned long &rightDigits);
-void bitwiseSplit(unsigned int input, unsigned short &leftDigits, unsigned short &rightDigits);
+void bitwiseSplit(unsigned long long &input, unsigned long &leftDigits, unsigned long &rightDigits);
+void bitwiseSplit(unsigned int &input, unsigned short &leftDigits, unsigned short &rightDigits);
 void setBit(unsigned long long &input, int bit, bool value){ input |= value << bit; }
 void setBit(unsigned int &input, int bit, bool value){ input |= value << bit; }
 void setBit(unsigned short &input, int bit, bool value){ input |= value << bit; }

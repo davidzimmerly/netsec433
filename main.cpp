@@ -22,9 +22,11 @@ void changeBit(unsigned long long &input, unsigned long long bit, bool value){ u
 void changeBit(unsigned int &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
 void changeBit(unsigned short &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
 unsigned long long* permuteKey(unsigned long long &input);
+unsigned long long* permuteKey2(unsigned int &left, unsigned int &right);
 void displayBinary(unsigned long long input);
 void displayBinary(unsigned int input);
-void displayBinary28(unsigned int input);
+void displayBinaryX(unsigned int input,unsigned int bits);
+void displayBinaryX(unsigned long long input,unsigned int bits);
 void displayBinary(unsigned short input);
 void displayBinary(unsigned long input);
 void leftShift(unsigned int &input);
@@ -81,10 +83,12 @@ int main()
     unsigned long long des_key = 1383827165325090801;
     unsigned long long* permutation1;
     permutation1 = permuteKey(des_key);
-    displayBinary(*permutation1);
-    std::cout << std::endl;
-    std::cout << *permutation1 << std::endl;
-    unsigned int C[16], D[16];
+    //displayBinary(des_key);
+    //std::cout << std::endl;
+    //displayBinary(*permutation1);
+    //std::cout << std::endl;
+    //std::cout << *permutation1 << std::endl;
+    unsigned int C[17], D[17]; //16+1 for the initial split
     bitwiseSplitDES(*permutation1,C[0],D[0]);//this is the initial split
 
     //creates 16 48-bit subkeys (extra bits are cleared at left for easy c++)
@@ -102,8 +106,38 @@ int main()
         }
 
     }
+    //subkey check
+    /*for (int x=0; x<=16; x++){
+        std::cout << "C["<<x<<"]=";
+        unsigned int bits = 28;
+        displayBinaryX(C[x],bits);
+        std::cout<<std::endl;
+        std::cout << "D["<<x<<"]=";
+        displayBinaryX(D[x],bits);
+        std::cout<<std::endl;
+    }*/
+    unsigned long long* K[16];
+    for (int x=1; x<=16; x++){
+        K[x] = permuteKey2(C[x],D[x]);
+    }
+
+    //key check
+    /*for (int x=1; x<=16; x++){
+        std::cout<<"K[";
+        if (x+1<10)
+            std::cout<<"0";
+        std::cout<<x<<"]=";
+        unsigned int bits = 48;
+        //displayBinaryX(*K[x],bits);
+
+        std::cout<<std::endl;
+        //std::cout<<"K[x]="<<*K[x]<<std::endl;
+    }*/
 
 
+    for (int x=1; x<=16; x++){
+        delete K[x];
+    }
 
 
     delete er;
@@ -118,9 +152,6 @@ void leftShift(unsigned int &input){
     input= input<<1;
     setBit(input,0,bit);
     clearBit(input,28);
-
-
-
 }
 
 
@@ -166,6 +197,31 @@ unsigned long long* permuteKey(unsigned long long &input){
     return permutation;
 }
 
+unsigned long long* permuteKey2(unsigned int &left, unsigned int &right){
+    unsigned long long* permutation= new unsigned long long;
+    *permutation = 0;
+    unsigned int bits = 28;//must be unsigned for displayBinaryX, cannot promote int constant
+    //displayBinaryX(left,bits);
+    //displayBinaryX(right,bits);
+    //std::cout<<std::endl;
+    for (int x=0; x<48; x++){//set 48 bit key, the upper bits should be blank
+        int bit = pc_2[x];
+        bool bitValue;
+        if (56-bit>=28){
+            bitValue = checkBit(left,28-bit); //27 to reverse sequence, -1 to decrement bit
+        }
+        else{
+            bitValue = checkBit(right,56-bit);
+        }
+        changeBit(*permutation,47-x,bitValue);
+
+    }
+
+    return permutation;
+}
+
+
+
 void displayBinary(unsigned long long input){
     for (int x=63; x>=0; x--)
         std::cout << checkBit(input,x);
@@ -176,11 +232,23 @@ void displayBinary(unsigned int input){
         std::cout << checkBit(input,x);
     std::cout << std::endl;
 }
-void displayBinary28(unsigned int input){
-    for (int x=27; x>=0; x--)
+void displayBinaryX(unsigned int input,unsigned int bits){
+    for (int x=bits-1; x>=0; x--){
         std::cout << checkBit(input,x);
-    std::cout << std::endl;
+        if (x%6==0)
+            std::cout<<" ";
+    }
+
 }
+void displayBinaryX(unsigned long long input,unsigned int bits){
+    for (int x=bits-1; x>=0; x--){
+        std::cout << checkBit(input,x);
+        if (x%6==0)
+            std::cout<<" ";
+    }
+
+}
+
 
 void displayBinary(unsigned short input){
     for (int x=15; x>=0; x--)

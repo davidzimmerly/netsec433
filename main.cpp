@@ -23,24 +23,12 @@ bool checkBit(unsigned long &input, int bit){ return (input>>bit)&1;}
 void changeBit(unsigned long long &input, unsigned long long bit, bool value){ unsigned long long one = 1; input ^= (-value ^input) & (one << bit);}
 void changeBit(unsigned int &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
 void changeBit(unsigned short &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
-unsigned long long* permuteKey(unsigned long long &input);
-unsigned long long* permuteKey2(unsigned int &left, unsigned int &right);
-unsigned long long * permuteInitial(unsigned long long &message);
-unsigned long long * permuteEbit(unsigned int &message);
-unsigned long long * permuteFinal(unsigned long long &message);
-void displayBinary(unsigned long long input);
-void displayBinary(unsigned int input);
-void displayBinaryX(unsigned int input,unsigned int bits);
-void displayBinaryX(unsigned long long input,unsigned int bits);
-void displayBinary(unsigned short input);
-void displayBinary(unsigned long input);
-void leftShift(unsigned int &input);
-unsigned int function_s(int table,int row, int column );
-unsigned int * permutePbit(unsigned int &input);
-unsigned int * function_f(unsigned int* data, unsigned long long* key);
+
 class encrypt_ram{
     private:
-        std::string key = "94307803947898";
+        std::string key = "94307803947898";//for initial encryption method XOR
+        void leftShift(unsigned int &input);
+        unsigned int function_s(int table,int row, int column );
     public:
         void encrypt(std::string &message){
             for (int x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
@@ -48,11 +36,29 @@ class encrypt_ram{
         void decrypt(std::string &message){
            encrypt(message);
         }
-
+        void displayBinary(unsigned long long input);
+        void displayBinary(unsigned int input);
+        void displayBinaryX(unsigned int input,unsigned int bits);
+        void displayBinaryX(unsigned long long input,unsigned int bits);
+        void displayBinary(unsigned short input);
+        void displayBinary(unsigned long input);
+        void desEncrypt(unsigned long long & message, unsigned long long & key);
+        unsigned int * function_f(unsigned int* data, unsigned long long* key);
+        unsigned int * permutePbit(unsigned int &input);
+        unsigned long long* permuteKey(unsigned long long &input);
+        unsigned long long* permuteKey2(unsigned int &left, unsigned int &right);
+        unsigned long long * permuteInitial(unsigned long long &message);
+        unsigned long long * permuteEbit(unsigned int &message);
+        unsigned long long * permuteFinal(unsigned long long &message);
 };
 
-unsigned long long testInput = 17343092720046919924;//1111000010101111000010101111000011110101000011110101000011110101
-unsigned long long testMessage = 81985529216486895;//0000000100100011010001010110011110001001101010111100110111101111
+
+
+
+
+
+//unsigned long long testInput = 17343092720046919924;//1111000010101111000010101111000011110101000011110101000011110101
+//unsigned long long testMessage = 81985529216486895;//0000000100100011010001010110011110001001101010111100110111101111
 
 
 int main()
@@ -85,121 +91,21 @@ int main()
             done = anyKey();
         }
     }
-    //unsigned short ld, rd;
     */
-    unsigned long long des_key = 1383827165325090801;
-
-
-    //begin init
-    unsigned long long* permutation1;
-    permutation1 = permuteKey(des_key);
-    unsigned int C[17], D[17]; //16+1 for the initial split
-    bitwiseSplitDES(*permutation1,C[0],D[0]);//this is the initial split
-
-    //creates 16 48-bit subkeys (extra bits are cleared at left for easy c++)
-    for (int x=1; x<=16; x++){
-        //left shift
-        C[x] = C[x-1];
-        D[x] = D[x-1];
-        leftShift(C[x]);
-        leftShift(D[x]);
-
-        if (x>=3 && x!=16 && x!=9){
-            leftShift(C[x]);
-            leftShift(D[x]);
-
-        }
-
-    }
-    unsigned long long* K[16];
-    for (int x=1; x<=16; x++){
-        K[x] = permuteKey2(C[x],D[x]);
-    }
-
-
-    //encode starts here
-    unsigned long long* initialPermutation;
-    initialPermutation = permuteInitial(testMessage);
-    //displayBinary(*initialPermutation);
-    //std::cout<<"Splitting initial Permutation:"<<std::endl;
-    unsigned int *l[17], *r[17];
-    l[0] = new unsigned int;
-    *l[0] = 0;
-    r[0] = new unsigned int;
-    *r[0] = 0;
-    bitwiseSplit(*initialPermutation,*l[0],*r[0]);
-
-  /*  l[1] = new unsigned int;
-    *l[1] = 0;
-    *l[1] = *r[0];
-    r[1] = function_f(r[0],K[1]);//^*l[0];
-    *r[1] = (*r[1])^(*l[0]);
-
-
-    l[2] = new unsigned int;
-    *l[2] = 0;
-    *l[2] = *r[1];
-    r[2] = function_f(r[1],K[2]);//^*l[0];
-    *r[2] = (*r[2])^(*l[1]);
-
-    l[3] = new unsigned int;
-    *l[3] = 0;
-    *l[3] = *r[2];
-    r[3] = function_f(r[2],K[3]);//^*l[0];
-    //*r[3] = (*r[3])^(*l[2]);
-
-
-    for (int n = 1; n <=16; n++){
-        std::cout<<"k";
-        displayBinary(*K[n]);
-    }
-//std::cout<<std::endl<<*r[1]<<std::endl;
-displayBinary(*r[1]);
-
-
-*/
-
-    for (int n = 1 ; n<=16 ; n++){
-        l[n] = new unsigned int;
-        *l[n] = 0;
-        *l[n] = *r[n-1];
-        //std::cout<<std::endl<<*l[n-1]<<std::endl;
-        //*r[n] = *l[n-1];//*function_f(*r[n-1],K[n-1]);
-        r[n] = function_f(r[n-1],K[n]);//^*l[0];
-        *r[n] = (*r[n])^(*l[n-1]);
-    }
-
-
-
-
-    unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
-    unsigned long long* finalPermutation = permuteFinal(val);
-    displayBinary(*finalPermutation);
-    //displayBinary(*l[16]);
-    std::cout << std::hex << *finalPermutation << std::endl;
-
-
-
-
-
-    //cleanup
-    for (int x=1; x<=16; x++){
-
-        delete K[x];
-    }
-
-
+    unsigned long long* des_key = new unsigned long long;
+    *des_key = 1383827165325090801;
+    unsigned long long* testMessage = new unsigned long long;
+    *testMessage = 81985529216486895;
+    er->desEncrypt(*testMessage,*des_key);
     delete er;
-    delete permutation1;
-    delete initialPermutation;
-	return 0;
+    return 0;
 }
 
 void des_init();
 
 void encode();
 
-unsigned int * function_f(unsigned int* data, unsigned long long* key){
+unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* key){
 
     unsigned long long* e;
     e = permuteEbit(*data);
@@ -266,9 +172,86 @@ unsigned int * function_f(unsigned int* data, unsigned long long* key){
 }
 
 
+void encrypt_ram::desEncrypt(unsigned long long & message, unsigned long long & key){
+
+    //unsigned long long des_key = 1383827165325090801;
+    //unsigned long long testMessage = 81985529216486895;
+
+    //begin init
+    unsigned long long* permutation1;
+    permutation1 = permuteKey(key);
+    unsigned int C[17], D[17]; //16+1 for the initial split
+    bitwiseSplitDES(*permutation1,C[0],D[0]);//this is the initial split
+
+    //creates 16 48-bit subkeys (extra bits are cleared at left for easy c++)
+    for (int x=1; x<=16; x++){
+        //left shift
+        C[x] = C[x-1];
+        D[x] = D[x-1];
+        leftShift(C[x]);
+        leftShift(D[x]);
+
+        if (x>=3 && x!=16 && x!=9){
+            leftShift(C[x]);
+            leftShift(D[x]);
+
+        }
+
+    }
+    unsigned long long* K[16];
+    for (int x=1; x<=16; x++){
+        K[x] = permuteKey2(C[x],D[x]);
+    }
+
+
+    //encode starts here
+    unsigned long long* initialPermutation;
+    initialPermutation = permuteInitial(message);
+    //displayBinary(*initialPermutation);
+    //std::cout<<"Splitting initial Permutation:"<<std::endl;
+    unsigned int *l[17], *r[17];
+    l[0] = new unsigned int;
+    *l[0] = 0;
+    r[0] = new unsigned int;
+    *r[0] = 0;
+    bitwiseSplit(*initialPermutation,*l[0],*r[0]);
+
+
+    for (int n = 1 ; n<=16 ; n++){
+        l[n] = new unsigned int;
+        *l[n] = 0;
+        *l[n] = *r[n-1];
+        //std::cout<<std::endl<<*l[n-1]<<std::endl;
+        //*r[n] = *l[n-1];//*function_f(*r[n-1],K[n-1]);
+        r[n] = function_f(r[n-1],K[n]);//^*l[0];
+        *r[n] = (*r[n])^(*l[n-1]);
+    }
+
+
+
+
+    unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
+    unsigned long long* finalPermutation = permuteFinal(val);
+
+
+    //sample output
+    displayBinary(*finalPermutation);
+    std::cout << std::hex << *finalPermutation << std::endl;
+
+
+
+
+
+    //cleanup
+    delete permutation1;
+    delete initialPermutation;
+
+
+}
+
 
 //we probably want some functionality to clear all variable values on exit??
-void leftShift(unsigned int &input){
+void encrypt_ram::leftShift(unsigned int &input){
     bool bit = checkBit(input,27);//this is special function for 28 bit keys, but still should modularize it
     input= input<<1;
     setBit(input,0,bit);
@@ -369,7 +352,7 @@ const int ipInverse [64] = {40,     8,   48,    16,    56,   24,    64,   32,
                             35,     3,   43,    11,    51,   19,    59,   27,
                             34,     2,   42,    10,    50,   18,    58,   26,
                             33,     1,   41,     9,    49,   17,    57,   25};
-unsigned long long* permuteKey(unsigned long long &input){
+unsigned long long* encrypt_ram::permuteKey(unsigned long long &input){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
     for (int x=0; x<56; x++){//set 56 bit key, the upper bits should be blank
@@ -377,7 +360,7 @@ unsigned long long* permuteKey(unsigned long long &input){
     }
     return permutation;
 }
-unsigned long long* permuteKey2(unsigned int &left, unsigned int &right){
+unsigned long long* encrypt_ram::permuteKey2(unsigned int &left, unsigned int &right){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
     unsigned int bits = 28;//must be unsigned for displayBinaryX for bits above 31, cannot promote int constant
@@ -399,7 +382,7 @@ unsigned long long* permuteKey2(unsigned int &left, unsigned int &right){
 
     return permutation;
 }
-unsigned long long * permuteInitial(unsigned long long &message){
+unsigned long long * encrypt_ram::permuteInitial(unsigned long long &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
     for (int x=0; x<64; x++){//set 56 bit key, the upper bits should be blank
@@ -408,7 +391,7 @@ unsigned long long * permuteInitial(unsigned long long &message){
     return permutation;
 
 }//should make this modular and combine permutation functions
-unsigned long long * permuteEbit(unsigned int &message){
+unsigned long long * encrypt_ram::permuteEbit(unsigned int &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
     for (int x=0; x<48; x++){//set 48 bit key, the upper bits should be blank
@@ -416,7 +399,7 @@ unsigned long long * permuteEbit(unsigned int &message){
     }
     return permutation;
 }
-unsigned long long * permuteFinal(unsigned long long &message){
+unsigned long long * encrypt_ram::permuteFinal(unsigned long long &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
     for (int x=0; x<64; x++){//set 48 bit key, the upper bits should be blank
@@ -426,7 +409,7 @@ unsigned long long * permuteFinal(unsigned long long &message){
 
 }
 
-unsigned int * permutePbit(unsigned int &input){
+unsigned int * encrypt_ram::permutePbit(unsigned int &input){
     unsigned int* permutation= new unsigned int;
     *permutation = 0;
     for (int x=0; x<32; x++){//set 48 bit key, the upper bits should be blank
@@ -435,7 +418,7 @@ unsigned int * permutePbit(unsigned int &input){
     return permutation;
 }
 
-void displayBinary(unsigned long long input){
+void encrypt_ram::displayBinary(unsigned long long input){
     for (int x=63; x>=0; x--){
         std::cout << checkBit(input,x);
         if (x%4==0)
@@ -443,12 +426,12 @@ void displayBinary(unsigned long long input){
     }
     std::cout << std::endl;
 }
-void displayBinary(unsigned int input){
+void encrypt_ram::displayBinary(unsigned int input){
     for (int x=31; x>=0; x--)
         std::cout << checkBit(input,x);
     std::cout << std::endl;
 }
-void displayBinaryX(unsigned int input,unsigned int bits){
+void encrypt_ram::displayBinaryX(unsigned int input,unsigned int bits){
     for (int x=bits-1; x>=0; x--){
         std::cout << checkBit(input,x);
         if (x%6==0)
@@ -456,7 +439,7 @@ void displayBinaryX(unsigned int input,unsigned int bits){
     }
 
 }
-void displayBinaryX(unsigned long long input,unsigned int bits){
+void encrypt_ram::displayBinaryX(unsigned long long input,unsigned int bits){
     for (int x=bits-1; x>=0; x--){
         std::cout << checkBit(input,x);
         if (x%6==0)
@@ -465,7 +448,7 @@ void displayBinaryX(unsigned long long input,unsigned int bits){
 
 }
 
-unsigned int function_s(int table,int row, int column ){
+unsigned int encrypt_ram::function_s(int table,int row, int column ){
    // std::cout << "starting function s with table="<<table<<" row="<<row<<" column="<<column<<std::endl;
    int address = (row) * 16 + (column);
    //std::cout <<"address= "<<address<<std::endl;
@@ -490,12 +473,12 @@ unsigned int function_s(int table,int row, int column ){
         return 0;
    }
 }
-void displayBinary(unsigned short input){
+void encrypt_ram::displayBinary(unsigned short input){
     for (int x=15; x>=0; x--)
         std::cout << checkBit(input,x);
     std::cout << std::endl;
 }
-void displayBinary(unsigned long input){
+void encrypt_ram::displayBinary(unsigned long input){
     for (int x=15; x>=0; x--)
         std::cout << checkBit(input,x);
     std::cout << std::endl;

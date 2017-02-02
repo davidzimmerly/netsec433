@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 
+//i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit)
 bool anyKey();
 void bitwiseSplit(unsigned long long &input, unsigned long &leftDigits, unsigned long &rightDigits);
 void bitwiseSplit(unsigned int &input, unsigned short &leftDigits, unsigned short &rightDigits);
@@ -33,6 +34,7 @@ void displayBinaryX(unsigned long long input,unsigned int bits);
 void displayBinary(unsigned short input);
 void displayBinary(unsigned long input);
 void leftShift(unsigned int &input);
+int function_s(int table,int row, int column );
 
 class encrypt_ram{
     private:
@@ -151,17 +153,53 @@ int main()
     std::cout << std::endl;
     unsigned long long xorOp;
     xorOp = (*K[1])^(*e);
-    displayBinaryX(xorOp,48);//E(R_0)
+    displayBinaryX(xorOp,48);
 
+    unsigned int position = 48;
+    std::cout<<std::endl;
+    unsigned int b[8];
+    unsigned int col[8];
+    unsigned int row[8];
+    for (int n=0; n<8; n++){
+        b[n]=0;
+        col[n]=0;
+        row[n]=0;
+    }
 
-    for (int n=1; n<=16; n++){
-        //left shift
+    std::cout<<std::endl;
 
+    for (int n=0; n<8; n++){
+        for (int i=0; i<6; i++){
+            //std::cout << "i="<<i<< " n="<<n<<std::endl;
+    //        std::cout << "checking position:" << position -1-i<< std::endl;
+            std::cout << checkBit(xorOp, position-1-i) ; // these are the b values, each
+            //std::cout<<std::endl;
+            if (checkBit(xorOp, position-1-i))
+                b[n] += (unsigned int)pow(2.0,6-i-1);
+            if (i==0)
+                row[n] = (int)checkBit(xorOp, position-1-i)*2+(int)checkBit(xorOp, position-i-6);
+            else if (i<5)
+                col[n] += (int)checkBit(xorOp, position-1-i)*(int)pow(2.0,5-i-1);
+
+        }
+        std::cout<< " ";
+        std::cout<<std::endl;
+        std::cout<<"row["<<n<<"]="<<row[n]<<std::endl;
+        std::cout<<"col["<<n<<"]="<<col[n]<<std::endl;
+        //std::cout<<"b["<<n<<"]="<<b[n]<<std::endl;
+        //std::cout<<"s011011="<<function_s(1,1,13);
+        position -=6;
+    }
+
+    for (int x=0; x<8; x++){
+        std::cout<<"s"<<x+1<<" ="<<function_s(x+1,row[x],col[x])<<std::endl;
 
     }
 
 
+
     for (int x=1; x<=16; x++){
+
         delete K[x];
     }
 
@@ -180,10 +218,7 @@ void leftShift(unsigned int &input){
     setBit(input,0,bit);
     clearBit(input,28);
 }
-
-
-bool anyKey()
-{
+bool anyKey(){
     std::cout << "Press any key + enter to continue...x/exit to exit" << std::endl;
     std::string c;
     std::cin >> c;
@@ -273,7 +308,6 @@ unsigned long long* permuteKey(unsigned long long &input){
     }
     return permutation;
 }
-
 unsigned long long* permuteKey2(unsigned int &left, unsigned int &right){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
@@ -296,7 +330,6 @@ unsigned long long* permuteKey2(unsigned int &left, unsigned int &right){
 
     return permutation;
 }
-
 unsigned long long * permuteInitial(unsigned long long &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
@@ -306,7 +339,6 @@ unsigned long long * permuteInitial(unsigned long long &message){
     return permutation;
 
 }//should make this modular and combine permutation functions
-
 unsigned long long * permuteEbit(unsigned long &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
@@ -315,7 +347,6 @@ unsigned long long * permuteEbit(unsigned long &message){
     }
     return permutation;
 }
-
 void displayBinary(unsigned long long input){
     for (int x=63; x>=0; x--){
         std::cout << checkBit(input,x);
@@ -343,6 +374,34 @@ void displayBinaryX(unsigned long long input,unsigned int bits){
         if (x%6==0)
             std::cout<<" ";
     }
+
+}
+
+int function_s(int table,int row, int column ){
+   // std::cout << "starting function s with table="<<table<<" row="<<row<<" column="<<column<<std::endl;
+   int address = (row) * 16 + (column);
+   //std::cout <<"address= "<<address<<std::endl;
+   switch(table){
+    case 1:
+        return s1[address];
+    case 2:
+        return s2[address];
+    case 3:
+        return s3[address];
+    case 4:
+        return s4[address];
+    case 5:
+        return s5[address];
+    case 6:
+        return s6[address];
+    case 7:
+        return s7[address];
+    case 8:
+        return s8[address];
+    default:
+        return 0;
+   }
+
 
 }
 void displayBinary(unsigned short input){

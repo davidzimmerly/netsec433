@@ -55,6 +55,8 @@ int main()
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
     er->desEncrypt(*testMessage);
+    delete des_key;
+    delete testMessage;
     delete er;
     return 0;
 }

@@ -30,8 +30,8 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
 
     }
     delete e;
-    delete data;
-    delete key;
+    //delete data;
+    //delete key;
     return permutePbit(f_result);
 }
 
@@ -64,7 +64,8 @@ encrypt_ram::encrypt_ram(unsigned long long & key){
 }
 
 encrypt_ram::~encrypt_ram(){
-    for (int x=0; x<=16; x++){
+
+    for (int x=1; x<=16; x++){
         delete K[x];
     }
 }
@@ -99,7 +100,8 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
 
     //cleanup
     delete initialPermutation;
-    for (int n = 0 ; n<=17 ; n++){
+    delete finalPermutation;
+    for (int n = 0 ; n<=16 ; n++){
         delete l[n];
         delete r[n];
     }

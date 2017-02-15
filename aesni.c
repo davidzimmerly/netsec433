@@ -404,7 +404,7 @@ int number_of_rounds)
 }
 
 
-void AES_CTR_encrypt (const unsigned char *in,
+/*void AES_CTR_encrypt (const unsigned char *in,
 unsigned char *out,
 const unsigned char ivec[8],
 const unsigned char nonce[4],
@@ -441,7 +441,7 @@ int number_of_rounds)
 		tmp = _mm_xor_si128(tmp,_mm_loadu_si128(&((__m128i*)in)[i]));
 		_mm_storeu_si128 (&((__m128i*)out)[i],tmp);
 	}
-}
+}*/
 void print_m128i_with_string_short(char* string,__m128i data,int length)
 {
 	unsigned char *pointer = (unsigned char*)&data;

@@ -3,6 +3,15 @@
 #include <cmath>
 #include "encrypt_ram.h"
 //#include <stdint.h>
+#include <curl/curl.h>
+#include <string.h>
+#include <stdlib.h>
+
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
 
 
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
@@ -119,8 +128,6 @@ ALIGN16 uint8_t ECB256_EXPECTED[] = {0xf3,0xee,0xd1,0xbd,0xb5,0xd2,0xa0,0x3c,
 
 
 
-//unsigned long long testInput = 17343092720046919924;//1111000010101111000010101111000011110101000011110101000011110101
-//unsigned long long testMessage = 81985529216486895;//0000000100100011010001010110011110001001101010111100110111101111
 
 
 int main()
@@ -160,11 +167,17 @@ int main()
 
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
+    //std::cout <<"1Test Message= "<< *testMessage << std::endl;
+    //std::cout <<"1Test Messagehex= "<<std::hex<< *testMessage << std::dec<<std::endl;
+    
     er->desEncrypt(*testMessage);
+    //std::cout <<"Test Message= "<< *testMessage << std::endl;
+    er->desDecrypt(*testMessage);
+    //std::cout <<"Test Message= "<< *testMessage << std::endl;
+    
     delete des_key;
-    delete testMessage;
-
-    AES_KEY key;
+    
+    /*AES_KEY key;
     AES_KEY decrypt_key;
     uint8_t *PLAINTEXT;
     uint8_t *CIPHERTEXT;
@@ -253,11 +266,66 @@ int main()
         }
     }
     printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
-    
-
-
-
+  */  
     delete er;
+    
+    CURL *curl;
+    CURLcode responseFromRequest;
+    std::string resultString;
+    char* pEnd;
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+    if (curl) {
+        
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d");//request this data
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resultString);
+        responseFromRequest = curl_easy_perform(curl);
+        if (responseFromRequest != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                curl_easy_strerror(responseFromRequest));
+
+        
+//        std::cout << "the random number was " << resultString <<std::endl;
+
+        std::string str = resultString;
+        for(int i=0; i<str.length(); i++)
+            if(str[i] == ' '){
+                str.erase(i,1);
+                i=0;
+            }
+     //   std::cout << "without space " << str <<std::endl;
+
+        std::string::size_type sz = 0;   // alias of size_t
+        unsigned long long ll;
+
+            
+         while (!str.empty()){
+            ll = std::stoull (str,&sz,0);
+            //std::cout << str.substr(0,sz) << " interpreted as " << ll << '\n';
+            str = str.substr(sz);
+            
+        }
+        *des_key = ll;
+        std::cout <<"new key: "<<ll<<std::endl;
+        er = new encrypt_ram(*des_key);
+        std::cout <<"original Test Message= "<< *testMessage << std::endl;
+        er->desEncrypt(*testMessage);
+        std::cout <<"encrypted Test Message= "<< *testMessage << std::endl;
+        er->desDecrypt(*testMessage);
+        std::cout <<"decrypted Test Message= "<< *testMessage << std::endl;
+        
+        // always cleanup 
+        curl_easy_cleanup(curl);
+    }
+
+
+    delete testMessage;
+
+    //delete er;
     return 0;
 }
 

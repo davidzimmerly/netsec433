@@ -192,6 +192,7 @@ class encrypt_ram{
            encrypt(message);
         }
         void desEncrypt(unsigned long long & message);
+        void desDecrypt(unsigned long long & message);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
         void AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
         void AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
@@ -208,6 +209,6 @@ class encrypt_ram{
         void print_m128i_with_string_short(char* string,__m128i data,int length);
         int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
-
+        
 };
 

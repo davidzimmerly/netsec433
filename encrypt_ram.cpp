@@ -94,10 +94,14 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
     unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
     unsigned long long* finalPermutation = permuteFinal(val);
 
-    //sample output
-    displayBinary(*finalPermutation);
-    std::cout << std::hex << *finalPermutation << std::endl;
+    //this may need to change, the behavior should switch the values (currently nothing was done with value)
+    message =*finalPermutation;
 
+
+    //sample output
+    //displayBinary(*finalPermutation);
+    //std::cout << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
+    //std::cout << "this is decimal equivalent: " << *finalPermutation << std::dec<<std::endl;
     //cleanup
     delete initialPermutation;
     delete finalPermutation;
@@ -107,6 +111,50 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
     }
 
 }
+
+void encrypt_ram::desDecrypt(unsigned long long & message){
+
+    unsigned long long* initialPermutation;
+    initialPermutation = permuteInitial(message);
+    unsigned int *l[17], *r[17];
+    l[0] = new unsigned int;
+    *l[0] = 0;
+    r[0] = new unsigned int;
+    *r[0] = 0;
+    bitwiseSplit(*initialPermutation,*l[0],*r[0]);
+
+
+    for (int n = 1 ; n<=16 ; n++){
+        l[n] = new unsigned int;
+        *l[n] = 0;
+        *l[n] = *r[n-1];
+        r[n] = function_f(r[n-1],K[17-n]);//^*l[0];
+        *r[n] = (*r[n])^(*l[n-1]);
+    }
+
+
+    unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
+    unsigned long long* finalPermutation = permuteFinal(val);
+
+    //this may need to change, the behavior should switch the values (currently nothing was done with value)
+    message =*finalPermutation;
+
+
+    //sample output
+    //displayBinary(*finalPermutation);
+    //std::cout << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
+    //std::cout << "this is decimal equivalent: " << *finalPermutation << std::dec<<std::endl;
+    //cleanup
+    delete initialPermutation;
+    delete finalPermutation;
+    for (int n = 0 ; n<=16 ; n++){
+        delete l[n];
+        delete r[n];
+    }
+
+}
+
+
 
 
 //we probably want some functionality to clear all variable values on exit??

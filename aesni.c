@@ -45,7 +45,52 @@ typedef struct KEY_SCHEDULE{
 	unsigned int nr;
 }AES_KEY;
 
-ALIGN16 uint8_t AES128_TEST_KEY[] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,
+ALIGN16 uint8_t CBC_IV[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
+ALIGN16 uint8_t CBC128_EXPECTED[] = {0x76,0x49,0xab,0xac,0x81,0x19,0xb2,0x46,
+0xce,0xe9,0x8e,0x9b,0x12,0xe9,0x19,0x7d,
+0x50,0x86,0xcb,0x9b,0x50,0x72,0x19,0xee,
+0x95,0xdb,0x11,0x3a,0x91,0x76,0x78,0xb2,
+0x73,0xbe,0xd6,0xb8,0xe3,0xc1,0x74,0x3b,
+0x71,0x16,0xe6,0x9e,0x22,0x22,0x95,0x16,
+0x3f,0xf1,0xca,0xa1,0x68,0x1f,0xac,0x09,
+0x12,0x0e,0xca,0x30,0x75,0x86,0xe1,0xa7};
+ALIGN16 uint8_t CBC192_EXPECTED[] = {0x4f,0x02,0x1d,0xb2,0x43,0xbc,0x63,0x3d,
+0x71,0x78,0x18,0x3a,0x9f,0xa0,0x71,0xe8,
+0xb4,0xd9,0xad,0xa9,0xad,0x7d,0xed,0xf4,
+0xe5,0xe7,0x38,0x76,0x3f,0x69,0x14,0x5a,
+0x57,0x1b,0x24,0x20,0x12,0xfb,0x7a,0xe0,
+0x7f,0xa9,0xba,0xac,0x3d,0xf1,0x02,0xe0,
+0x08,0xb0,0xe2,0x79,0x88,0x59,0x88,0x81,
+0xd9,0x20,0xa9,0xe6,0x4f,0x56,0x15,0xcd};
+ALIGN16 uint8_t CBC256_EXPECTED[] = {0xf5,0x8c,0x4c,0x04,0xd6,0xe5,0xf1,0xba,
+0x77,0x9e,0xab,0xfb,0x5f,0x7b,0xfb,0xd6,
+0x9c,0xfc,0x4e,0x96,0x7e,0xdb,0x80,0x8d,
+0x67,0x9f,0x77,0x7b,0xc6,0x70,0x2c,0x7d,
+0x39,0xf2,0x33,0x69,0xa9,0xd9,0xba,0xcf,
+0xa5,0x30,0xe2,0x63,0x04,0x23,0x14,0x61,
+0xb2,0xeb,0x05,0xe2,0xc3,0x9b,0xe9,0xfc,
+0xda,0x6c,0x19,0x07,0x8c,0x6a,0x9d,0x1b};
+ALIGN16 uint8_t CTR128_IV[] = {0xC0,0x54,0x3B,0x59,0xDA,0x48,0xD9,0x0B};
+ALIGN16 uint8_t CTR192_IV[] = {0x02,0x0C,0x6E,0xAD,0xC2,0xCB,0x50,0x0D};
+ALIGN16 uint8_t CTR256_IV[] = {0xC1,0x58,0x5E,0xF1,0x5A,0x43,0xD8,0x75};
+ALIGN16 uint8_t CTR128_NONCE[] = {0x00,0x6C,0xB6,0xDB};
+ALIGN16 uint8_t CTR192_NONCE[] = {0x00,0x96,0xB0,0x3B};
+ALIGN16 uint8_t CTR256_NONCE[] = {0x00,0xFA,0xAC,0x24};
+ALIGN16 uint8_t CTR128_EXPECTED[] = {0x51,0x04,0xA1,0x06,0x16,0x8A,0x72,0xD9,
+0x79,0x0D,0x41,0xEE,0x8E,0xDA,0xD3,0x88,
+0xEB,0x2E,0x1E,0xFC,0x46,0xDA,0x57,0xC8,
+0xFC,0xE6,0x30,0xDF,0x91,0x41,0xBE,0x28};
+ALIGN16 uint8_t CTR192_EXPECTED[] = {0x45,0x32,0x43,0xFC,0x60,0x9B,0x23,0x32,
+0x7E,0xDF,0xAA,0xFA,0x71,0x31,0xCD,0x9F,
+0x84,0x90,0x70,0x1C,0x5A,0xD4,0xA7,0x9C,
+0xFC,0x1F,0xE0,0xFF,0x42,0xF4,0xFB,0x00};
+ALIGN16 uint8_t CTR256_EXPECTED[] = {0xF0,0x5E,0x23,0x1B,0x38,0x94,0x61,0x2C,
+0x49,0xEE,0x00,0x0B,0x80,0x4E,0xB2,0xA9,
+0xB8,0x30,0x6B,0x50,0x8F,0x83,0x9D,0x6A,
+0x55,0x30,0x83,0x1D,0x93,0x44,0xAF,0x1C};
+//for cbc and ecb modes: not ctr:
+/*ALIGN16 uint8_t AES128_TEST_KEY[] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,
 0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c};
 ALIGN16 uint8_t AES192_TEST_KEY[] = {0x8e,0x73,0xb0,0xf7,0xda,0x0e,0x64,0x52,
 0xc8,0x10,0xf3,0x2b,0x80,0x90,0x79,0xe5,
@@ -62,6 +107,22 @@ ALIGN16 uint8_t AES_TEST_VECTOR[] = {0x6b,0xc1,0xbe,0xe2,0x2e,0x40,0x9f,0x96,
 0xe5,0xfb,0xc1,0x19,0x1a,0x0a,0x52,0xef,
 0xf6,0x9f,0x24,0x45,0xdf,0x4f,0x9b,0x17,
 0xad,0x2b,0x41,0x7b,0xe6,0x6c,0x37,0x10};
+*/
+//for ctr test mode use:
+ALIGN16 uint8_t AES128_TEST_KEY[] = {0x7E,0x24,0x06,0x78,0x17,0xFA,0xE0,0xD7,
+0x43,0xD6,0xCE,0x1F,0x32,0x53,0x91,0x63};
+ALIGN16 uint8_t AES192_TEST_KEY[] = {0x7C,0x5C,0xB2,0x40,0x1B,0x3D,0xC3,0x3C,
+0x19,0xE7,0x34,0x08,0x19,0xE0,0xF6,0x9C,
+0x67,0x8C,0x3D,0xB8,0xE6,0xF6,0xA9,0x1A};
+ALIGN16 uint8_t AES256_TEST_KEY[] = {0xF6,0xD6,0x6D,0x6B,0xD5,0x2D,0x59,0xBB,
+0x07,0x96,0x36,0x58,0x79,0xEF,0xF8,0x86,
+0xC6,0x6D,0xD5,0x1A,0x5B,0x6A,0x99,0x74,
+0x4B,0x50,0x59,0x0C,0x87,0xA2,0x38,0x84};
+ALIGN16 uint8_t AES_TEST_VECTOR[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
+0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,
+0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F};
+
 ALIGN16 uint8_t ECB128_EXPECTED[] = {0x3a,0xd7,0x7b,0xb4,0x0d,0x7a,0x36,0x60,
 0xa8,0x9e,0xca,0xf3,0x24,0x66,0xef,0x97,
 0xf5,0xd3,0xd5,0x85,0x03,0xb9,0x69,0x9d,
@@ -170,6 +231,13 @@ int number_of_rounds)
 	//text length in bytes
 	//pointer to the expanded key schedule
 	//number of AES rounds 10,12 or 14
+
+
+
+
+
+
+
 	if(length%16)
 		length = length/16+1;
 	else
@@ -404,7 +472,7 @@ int number_of_rounds)
 }
 
 
-/*void AES_CTR_encrypt (const unsigned char *in,
+void AES_CTR_encrypt (const unsigned char *in,
 unsigned char *out,
 const unsigned char ivec[8],
 const unsigned char nonce[4],
@@ -441,7 +509,7 @@ int number_of_rounds)
 		tmp = _mm_xor_si128(tmp,_mm_loadu_si128(&((__m128i*)in)[i]));
 		_mm_storeu_si128 (&((__m128i*)out)[i],tmp);
 	}
-}*/
+}
 void print_m128i_with_string_short(char* string,__m128i data,int length)
 {
 	unsigned char *pointer = (unsigned char*)&data;
@@ -519,6 +587,7 @@ AES_KEY *key)
 
 int main ()
 {
+
 	AES_KEY key;
 	AES_KEY decrypt_key;
 	uint8_t *PLAINTEXT;
@@ -532,6 +601,154 @@ int main ()
 		printf("Cpu does not support AES instruction set. Bailing out.\n");
 		return 1;
 	}
+	//CTR MODE TEST:
+	uint8_t *NONCE;
+	uint8_t *IV;
+	#ifdef AES128
+	#define STR "Performing AES128 CTR.\n"
+		CIPHER_KEY = AES128_TEST_KEY;
+		EXPECTED_CIPHERTEXT = CTR128_EXPECTED;
+		IV = CTR128_IV;
+		NONCE = CTR128_NONCE;
+		key_length = 128;
+	#elif defined AES192
+	#define STR "Performing AES192 CTR.\n"
+		CIPHER_KEY = AES192_TEST_KEY;
+		EXPECTED_CIPHERTEXT = CTR192_EXPECTED;
+		IV = CTR192_IV;
+		NONCE = CTR192_NONCE;
+		key_length = 192;
+	#elif defined AES256
+	#define STR "Performing AES256 CTR.\n"
+		CIPHER_KEY = AES256_TEST_KEY;
+		EXPECTED_CIPHERTEXT = CTR256_EXPECTED;
+		IV = CTR256_IV;
+		NONCE = CTR256_NONCE;
+		key_length = 256;
+	#endif
+	PLAINTEXT = (uint8_t*)malloc(LENGTH);
+	CIPHERTEXT = (uint8_t*)malloc(LENGTH);
+	DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
+	for(i=0 ;i<LENGTH/16/2; i++){
+		for(j=0; j<2; j++){
+			_mm_storeu_si128(&((__m128i*)PLAINTEXT)[i*2+j],	((__m128i*)AES_TEST_VECTOR)[j]);
+		}
+	}
+	for(j=i*2 ; j<LENGTH/16; j++){
+		_mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],	((__m128i*)AES_TEST_VECTOR)[j%4]);
+	}
+	if (LENGTH%16){
+		_mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],((__m128i*)AES_TEST_VECTOR)[j%4]);
+	}
+	AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
+	AES_CTR_encrypt(PLAINTEXT,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
+	AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,	IV,	NONCE,	LENGTH,	key.KEY,	key.nr);
+	printf("%s\n",STR);
+	printf("The Cipher Key:\n");
+	print_m128i_with_string("",((__m128i*)CIPHER_KEY)[0]);
+	if (key_length > 128)
+		print_m128i_with_string_short("",((__m128i*)CIPHER_KEY)[1],(key_length/8) -16);
+	printf("The Key Schedule:\n");
+	for (i=0; i< key.nr; i++)
+		print_m128i_with_string("",((__m128i*)key.KEY)[i]);
+	printf("The PLAINTEXT:\n");
+	for (i=0; i< LENGTH/16; i++)
+		print_m128i_with_string("",((__m128i*)PLAINTEXT)[i]);
+	if (LENGTH%16)
+		print_m128i_with_string_short("",((__m128i*)PLAINTEXT)[i],LENGTH%16);
+	printf("\n\nThe CIPHERTEXT:\n");
+	for (i=0; i< LENGTH/16; i++)
+		print_m128i_with_string("",((__m128i*)CIPHERTEXT)[i]);
+	if (LENGTH%16)
+		print_m128i_with_string_short("",((__m128i*)CIPHERTEXT)[i],LENGTH%16);
+	for(i=0; i< ((32<LENGTH)? 32 : LENGTH); i++){
+		if (CIPHERTEXT[i] != EXPECTED_CIPHERTEXT[i%(16*2)]){
+			printf("The ciphertext is not equal to the expected ciphertext.\n\n");
+			return 1;
+		}
+	}
+	printf("The CIPHERTEXT equals to the EXPECTED CIHERTEXT"
+	" for bytes where expected text was entered.\n\n");
+	for(i=0; i<LENGTH; i++){
+		if (DECRYPTEDTEXT[i] != PLAINTEXT[i]){
+			printf("The DECRYPTED TEXT is not equal to the original"
+			"PLAINTEXT.\n\n");
+			return 1;
+		}
+	}
+	printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
+	
+	/*//CBC MODE TEST:
+	#ifdef AES128
+	#define STR "Performing AES128 CBC.\n"
+		CIPHER_KEY = AES128_TEST_KEY;
+		EXPECTED_CIPHERTEXT = CBC128_EXPECTED;
+		key_length = 128;
+	#elif defined AES192
+	#define STR "Performing AES192 CBC.\n"
+		CIPHER_KEY = AES192_TEST_KEY;
+		EXPECTED_CIPHERTEXT = CBC192_EXPECTED;
+		key_length = 192;
+	#elif defined AES256
+	#define STR "Performing AES256 CBC.\n"
+		CIPHER_KEY = AES256_TEST_KEY;
+		EXPECTED_CIPHERTEXT = CBC256_EXPECTED;
+		key_length = 256;
+	#endif
+	PLAINTEXT = (uint8_t*)malloc(LENGTH);
+	CIPHERTEXT = (uint8_t*)malloc(LENGTH);
+	DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
+	for(i=0 ;i<LENGTH/16/4; i++){
+		for(j=0; j<4; j++){
+			_mm_storeu_si128(&((__m128i*)PLAINTEXT)[i*4+j],	((__m128i*)AES_TEST_VECTOR)[j]);
+		}
+	}
+	for(j=i*4 ; j<LENGTH/16; j++){
+		_mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],	((__m128i*)AES_TEST_VECTOR)[j%4]);
+	}
+	if (LENGTH%16){
+		_mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],	((__m128i*)AES_TEST_VECTOR)[j%4]);
+	}
+	AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
+	AES_set_decrypt_key(CIPHER_KEY, key_length, &decrypt_key);
+	AES_CBC_encrypt(PLAINTEXT, CIPHERTEXT, CBC_IV, LENGTH, key.KEY, key.nr);
+	AES_CBC_decrypt(CIPHERTEXT,	DECRYPTEDTEXT, CBC_IV,	LENGTH,	decrypt_key.KEY, decrypt_key.nr);			
+	printf("%s\n",STR);
+	printf("The Cipher Key:\n");
+	print_m128i_with_string("",((__m128i*)CIPHER_KEY)[0]);
+	if (key_length > 128)
+		print_m128i_with_string_short("",((__m128i*)CIPHER_KEY)[1],(key_length/8) -16);
+	printf("The Key Schedule:\n");
+	for (i=0; i< key.nr; i++)
+		print_m128i_with_string("",((__m128i*)key.KEY)[i]);
+	printf("The PLAINTEXT:\n");
+	for (i=0; i< LENGTH/16; i++)
+		print_m128i_with_string("",((__m128i*)PLAINTEXT)[i]);
+	if (LENGTH%16)
+		print_m128i_with_string_short("",((__m128i*)PLAINTEXT)[i],LENGTH%16);
+	printf("\n\nThe CIPHERTEXT:\n");
+	for (i=0; i< LENGTH/16; i++)
+		print_m128i_with_string("",((__m128i*)CIPHERTEXT)[i]);
+	if (LENGTH%16)
+		print_m128i_with_string_short("",((__m128i*)CIPHERTEXT)[i],LENGTH%16);
+	for(i=0; i<((64<LENGTH)? 64 : LENGTH); i++){
+		if (CIPHERTEXT[i] != EXPECTED_CIPHERTEXT[i%64]){
+			printf("The ciphertext is not equal to the expected ciphertext.\n\n");
+			return 1;
+		}
+	}
+	printf("The CIPHERTEXT equals to the EXPECTED CIHERTEXT"
+	" for bytes where expected text was entered.\n\n");
+	for(i=0; i<LENGTH; i++){
+		if (DECRYPTEDTEXT[i] != PLAINTEXT[i%(16*4)]){
+			printf("%x",DECRYPTEDTEXT[i]);
+			printf("The DECRYPTED TEXT is not equal to the original"
+			"PLAINTEXT.\n\n");
+			return 1;
+		}
+	}
+	printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");*/
+/* ECB MODE TEST:
 	printf("CPU support AES instruction set.\n\n");
 	#ifdef AES128
 	#define STR "Performing AES128 ECB.\n"
@@ -599,7 +816,158 @@ int main ()
 			return 1;
 		}
 	}
-	printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
+	printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");*/
 }
 
 
+void AES_128_DECRYPT_on_the_fly (const unsigned char *userkey,
+const unsigned char *data)
+{
+	__m128i temp1, temp2, temp3, temp4;
+	int mask = 0x0c0f0e0d;
+	int con1 = 0x80, con2 = 0x36;
+	__m128i shuffle_mask =
+	_mm_set_epi32(0x0c0f0e0d,0x0c0f0e0d,0x0c0f0e0d,0x0c0f0e0d);
+	__m128i rcon;
+	__m128i block;
+	int i;
+	rcon = _mm_set_epi32(con2,con2,con2,con2);
+	temp1 = _mm_loadu_si128((__m128i*)userkey);
+	block = _mm_loadu_si128((__m128i*)&data[0]);
+	block = _mm_xor_si128(block, temp1);
+	for (i=1; i<=2; i++){
+		temp2 = _mm_slli_si128(temp1 , 4);
+		temp2 = _mm_xor_si128(temp1, temp2);
+		temp3 = _mm_shuffle_epi8(temp2, shuffle_mask);
+		temp3 = _mm_aesenclast_si128 (temp3,rcon);
+		temp1 = _mm_xor_si128(temp1,temp3);
+		temp1 = (__m128i)_mm_blend_ps((__m128)temp1, (__m128)temp2, 14);
+		temp2 = _mm_aesimc_si128(temp1);
+		rcon = _mm_srli_epi32(rcon,1);
+		block = _mm_aesdec_si128 (block, temp2);
+	}
+	rcon = _mm_set_epi32(con1,con1,con1,con1);
+	for (i=3; i<10; i++){
+		temp2 = _mm_slli_si128(temp1 , 4);
+		temp2 = _mm_xor_si128(temp1, temp2);
+		temp3 = _mm_shuffle_epi8(temp2, shuffle_mask);
+		temp3 = _mm_aesenclast_si128 (temp3,rcon);
+		temp1 = _mm_xor_si128(temp1,temp3);
+		temp1 = (__m128i)_mm_blend_ps((__m128)temp1, (__m128)temp2, 14);
+		temp2 = _mm_aesimc_si128(temp1);
+		rcon = _mm_srli_epi32(rcon,1);
+		block = _mm_aesdec_si128 (block, temp2);
+	}
+	temp2 = _mm_slli_si128(temp1 , 4);
+	temp2 = _mm_xor_si128(temp1, temp2);
+	temp3 = _mm_shuffle_epi8(temp2, shuffle_mask);
+	temp3 = _mm_aesenclast_si128 (temp3,rcon);
+	temp1 = _mm_xor_si128(temp1,temp3);
+	temp1 = (__m128i)_mm_blend_ps((__m128)temp1, (__m128)temp2, 14);
+	block = _mm_aesdeclast_si128 (block, temp1);
+	_mm_storeu_si128((__m128i*)&data[0] ,block);
+}
+
+void AES_CBC_decrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec[16],
+unsigned long length,unsigned char *key_schedule,unsigned int nr){
+
+	__m128i data1,data2,data3,data4;
+	__m128i feedback1,feedback2,feedback3,feedback4,last_in;
+	int i,j;
+	if (length%16)
+		length = length/16 + 1;
+	else length/=16;
+		feedback1=_mm_loadu_si128 ((__m128i*)ivec);
+	for(i=0; i < length/4; i++){
+		data1=_mm_loadu_si128 (&((__m128i*)in)[i*4+0]);
+		data2=_mm_loadu_si128 (&((__m128i*)in)[i*4+1]);
+		data3=_mm_loadu_si128 (&((__m128i*)in)[i*4+2]);
+		data4=_mm_loadu_si128 (&((__m128i*)in)[i*4+3]);
+		feedback2=data1;
+		feedback3=data2;
+		feedback4=data3;
+		last_in=data4;
+		data1 = _mm_xor_si128(data1,((__m128i*)key_schedule)[0]);
+		data2 = _mm_xor_si128(data1,((__m128i*)key_schedule)[0]);
+		data3 = _mm_xor_si128(data1,((__m128i*)key_schedule)[0]);
+		data4 = _mm_xor_si128(data1,((__m128i*)key_schedule)[0]);
+		for(j=1; j < nr; j++){
+			data1 = _mm_aesdec_si128(data1,((__m128i*)key_schedule)[j]);
+			data2 = _mm_aesdec_si128(data2,((__m128i*)key_schedule)[j]);
+			data3 = _mm_aesdec_si128(data3,((__m128i*)key_schedule)[j]);
+			data4 = _mm_aesdec_si128(data4,((__m128i*)key_schedule)[j]);
+		} 
+		
+		
+		
+		data1 = _mm_xor_si128(data1,feedback1);
+		data2 = _mm_xor_si128(data2,feedback2);
+		data3 = _mm_xor_si128(data3,feedback3);
+		data4 = _mm_xor_si128(data4,feedback4);
+
+		_mm_storeu_si128 (&((__m128i*)out)[i*4+0],data1);
+		_mm_storeu_si128 (&((__m128i*)out)[i*4+1],data2);
+		_mm_storeu_si128 (&((__m128i*)out)[i*4+2],data3);
+		_mm_storeu_si128 (&((__m128i*)out)[i*4+3],data4);
+		feedback1=last_in;
+	}
+	for(j=i*4; j < length; j++){
+		data1=_mm_loadu_si128 (&((__m128i*)in)[j]);
+		last_in=data1;
+		data1 = _mm_xor_si128 (data1,((__m128i*)key_schedule)[0]);
+		for(i=1; i < nr; i++){
+			data1 = _mm_aesdec_si128 (data1,((__m128i*)key_schedule)[i]);
+		}
+		data1 = _mm_aesdeclast_si128 (data1,((__m128i*)key_schedule)[i]);
+		data1 = _mm_xor_si128 (data1,feedback1);
+		_mm_storeu_si128 (&((__m128i*)out)[j],data1);
+		feedback1=last_in;
+	}
+}
+
+void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],
+unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,
+const unsigned char *key,int nr){
+
+	__m128i feedback1,feedback2,feedback3,feedback4;
+	__m128i data1,data2,data3,data4;
+	int i,j;
+	feedback1=_mm_loadu_si128((__m128i*)ivec1);
+	feedback2=_mm_loadu_si128((__m128i*)ivec2);
+	feedback3=_mm_loadu_si128((__m128i*)ivec3);
+	feedback4=_mm_loadu_si128((__m128i*)ivec4);
+	for(i=0; i < length/16/4; i++){
+		data1 = _mm_loadu_si128 (&((__m128i*)in)[i*4+0]);
+		data2 = _mm_loadu_si128 (&((__m128i*)in)[i*4+1]);
+		data3 = _mm_loadu_si128 (&((__m128i*)in)[i*4+2]);
+		data4 = _mm_loadu_si128 (&((__m128i*)in)[i*4+3]);
+		feedback1 = _mm_xor_si128 (data1,feedback1);
+		feedback2 = _mm_xor_si128 (data2,feedback2);
+		feedback3 = _mm_xor_si128 (data3,feedback3);
+		feedback4 = _mm_xor_si128 (data4,feedback4);
+		feedback1 = _mm_xor_si128 (feedback1,((__m128i*)key)[0]);
+		feedback2 = _mm_xor_si128 (feedback2,((__m128i*)key)[0]);
+		feedback3 = _mm_xor_si128 (feedback3,((__m128i*)key)[0]);
+		feedback4 = _mm_xor_si128 (feedback4,((__m128i*)key)[0]);
+		for(j=1; j <nr;j++){
+			feedback1 = _mm_aesenc_si128 (feedback1,((__m128i*)key)[j]);
+			feedback2 = _mm_aesenc_si128 (feedback2,((__m128i*)key)[j]);
+			feedback3 = _mm_aesenc_si128 (feedback3,((__m128i*)key)[j]);
+			feedback4 = _mm_aesenc_si128 (feedback4,((__m128i*)key)[j]);
+		}
+		feedback1 = _mm_aesenclast_si128 (feedback1,((__m128i*)key)[j]);
+		feedback2 = _mm_aesenclast_si128 (feedback2,((__m128i*)key)[j]);
+		feedback3 = _mm_aesenclast_si128 (feedback3,((__m128i*)key)[j]);
+		feedback4 = _mm_aesenclast_si128 (feedback4,((__m128i*)key)[j]);
+
+
+		_mm_storeu_si128(&((__m128i*)out)[i*4+0],feedback1);
+		_mm_storeu_si128(&((__m128i*)out)[i*4+1],feedback2);
+		_mm_storeu_si128(&((__m128i*)out)[i*4+2],feedback3);
+		_mm_storeu_si128(&((__m128i*)out)[i*4+3],feedback4);
+	}
+
+
+
+
+}

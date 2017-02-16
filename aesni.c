@@ -11,7 +11,7 @@
 #define LENGTH 64
 #endif
 
-#include <stdio.h>
+#include <cstdio>
 #include <stdint.h>
 #include <wmmintrin.h>
 #include <smmintrin.h>
@@ -44,6 +44,7 @@ typedef struct KEY_SCHEDULE{
 	ALIGN16 unsigned char KEY[16*15];
 	unsigned int nr;
 }AES_KEY;
+
 
 ALIGN16 uint8_t CBC_IV[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
 0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
@@ -122,7 +123,7 @@ ALIGN16 uint8_t AES_TEST_VECTOR[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
 0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
 0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,
 0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F};
-
+////
 ALIGN16 uint8_t ECB128_EXPECTED[] = {0x3a,0xd7,0x7b,0xb4,0x0d,0x7a,0x36,0x60,
 0xa8,0x9e,0xca,0xf3,0x24,0x66,0xef,0x97,
 0xf5,0xd3,0xd5,0x85,0x03,0xb9,0x69,0x9d,
@@ -150,7 +151,7 @@ ALIGN16 uint8_t ECB256_EXPECTED[] = {0xf3,0xee,0xd1,0xbd,0xb5,0xd2,0xa0,0x3c,
 
 
 
-void print_m128i_with_string(char* string,__m128i data)
+void print_m128i_with_string(char const* string,__m128i data)
 {
 unsigned char *pointer = (unsigned char*)&data;
 int i;
@@ -160,23 +161,25 @@ printf("%02x",pointer[i]);
 printf("]\n");
 }
 
-void AES_128_Key_Expansion (const unsigned char *userkey,
-unsigned char *key)
+__m128i AES_128_ASSIST (__m128i temp1, __m128i temp2)
 {
-	inline __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2)
-	{
-		__m128i temp3;
-		temp2 = _mm_shuffle_epi32 (temp2 ,0xff);
-		temp3 = _mm_slli_si128 (temp1, 0x4);
-		temp1 = _mm_xor_si128 (temp1, temp3);
-		temp3 = _mm_slli_si128 (temp3, 0x4);
-		temp1 = _mm_xor_si128 (temp1, temp3);
-		temp3 = _mm_slli_si128 (temp3, 0x4);
-		temp1 = _mm_xor_si128 (temp1, temp3);
-		temp1 = _mm_xor_si128 (temp1, temp2);
-		return temp1;
-	}
+	__m128i temp3;
+	temp2 = _mm_shuffle_epi32 (temp2 ,0xff);
+	temp3 = _mm_slli_si128 (temp1, 0x4);
+	temp1 = _mm_xor_si128 (temp1, temp3);
+	temp3 = _mm_slli_si128 (temp3, 0x4);
+	temp1 = _mm_xor_si128 (temp1, temp3);
+	temp3 = _mm_slli_si128 (temp3, 0x4);
+	temp1 = _mm_xor_si128 (temp1, temp3);
+	temp1 = _mm_xor_si128 (temp1, temp2);
+	return temp1;
+}
 
+
+void AES_128_Key_Expansion (const unsigned char *userkey,
+const unsigned char *key)
+{
+	
 
 	__m128i temp1, temp2;
 	__m128i *Key_Schedule = (__m128i*)key;
@@ -375,7 +378,7 @@ unsigned char *key)
 	*temp3 = _mm_xor_si128 (*temp3, temp2);
 }
 void AES_256_Key_Expansion (const unsigned char *userkey,
-unsigned char *key)
+const unsigned char *key)
 {
 	__m128i temp1, temp2, temp3;
 	__m128i *Key_Schedule = (__m128i*)key;
@@ -529,19 +532,20 @@ AES_KEY *key)
 		return -1;
 	if (bits == 128)
 	{
-		AES_128_Key_Expansion (userKey,key);
+		
+		AES_128_Key_Expansion (userKey,reinterpret_cast<const unsigned char*>(key));
 		key->nr = 10;
 		return 0;
 	}
 	else if (bits == 192)
 	{
-		AES_192_Key_Expansion (userKey,key);
+		AES_192_Key_Expansion (userKey,reinterpret_cast<unsigned char*>(key));
 		key->nr = 12;
 		return 0;
 	}
 	else if (bits == 256)
 	{
-		AES_256_Key_Expansion (userKey,key);
+		AES_256_Key_Expansion (userKey,reinterpret_cast<const unsigned char*>(key));
 		key->nr = 14;
 		return 0;
 	}

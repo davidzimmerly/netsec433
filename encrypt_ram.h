@@ -1,6 +1,52 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+//#define
+//#define
+//#define
+
+#ifndef AES192
+#ifndef AES258
+#define AES128
+#endif
+#endif
+#ifndef LENGTH
+#define LENGTH 64
+#endif
+
+#include <cstdio>
+#include <stdint.h>
+#include <wmmintrin.h>
+#include <smmintrin.h>
+#include <emmintrin.h>
+
+
+
+
+
+#if !defined (ALIGN16)
+# if defined (__GNUC__)
+#   define ALIGN16 __attribute__ ( (aligned (16)))
+# else
+#   define ALIGN16 __declspec (align (16))
+# endif
+#endif
+
+
+#define cpuid(func,ax,bx,cx,dx)\
+  __asm__ __volatile__ ("cpuid":\
+  "=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx) : "a" (func));
+
+
+
+typedef struct KEY_SCHEDULE{
+  ALIGN16 unsigned char KEY[16*15];
+  unsigned int nr;
+}AES_KEY;
+
+
+
+
 
 
 class encrypt_ram{
@@ -43,6 +89,12 @@ class encrypt_ram{
         void changeBit(unsigned long long &input, unsigned long long bit, bool value){ unsigned long long one = 1; input ^= (-value ^input) & (one << bit);}
         void changeBit(unsigned int &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
         void changeBit(unsigned short &input, int bit, bool value){ input ^= (-value ^input) & (1 << bit);}
+
+
+
+
+
+
 
         //permutation tables:
         const int pc_1 [56] = { 57,   49,    41,   33,    25,    17,    9,
@@ -127,6 +179,10 @@ class encrypt_ram{
                                     33,     1,   41,     9,    49,   17,    57,   25};
 
     public:
+        int Check_CPU_support_AES();
+
+        void print_m128i_with_string(char const* string,__m128i data);
+
         encrypt_ram(unsigned long long & key);
         ~encrypt_ram();
         void encrypt(std::string &message){
@@ -136,5 +192,22 @@ class encrypt_ram{
            encrypt(message);
         }
         void desEncrypt(unsigned long long & message);
+        __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
+        void AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
+        void AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
+        void AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
+        void KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp3);
+        void AES_192_Key_Expansion (const unsigned char *userkey,unsigned char *key);
+        void KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2);
+        void KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3);
+        void AES_256_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
+        void AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
+        void AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
+        void AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],
+        const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds);
+        void print_m128i_with_string_short(char* string,__m128i data,int length);
+        int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
+        int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
+
 };
 

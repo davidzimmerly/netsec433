@@ -6,7 +6,7 @@
 #include <curl/curl.h>//for network access
 #include <string.h>//used for a strlen()call could probably remove
 #include <stdlib.h>//for printf support (remove eventually when done with AES drivers)
-//#include <fstream>//std::ifstream,file i/o
+#include <fstream>//std::ifstream,file i/o
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -51,6 +51,13 @@ ALIGN16 uint8_t ECB256_EXPECTED[] = {0xf3,0xee,0xd1,0xbd,0xb5,0xd2,0xa0,0x3c,0x0
 
 int main()
 {
+    //configuration options (for json test) 
+    //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
+    curl_global_init(CURL_GLOBAL_DEFAULT); 
+    std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
+    std::string rk;
+    std::getline(file, rk);
+    
     bool done = false;
 
     unsigned long long* des_key = new unsigned long long;
@@ -190,48 +197,34 @@ int main()
     
     std::string resultString;
     resultString = call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE");
-    unsigned long long ll = string_to_ull(resultString);
-    *des_key = ll;
+    unsigned long long ll = string_to_ull(resultString); //this crashes sometimes for me... think my request is too large sometimes need to research
+    unsigned long long* des_key2 = new unsigned long long;
+    *des_key2 = ll;
     std::cout <<"new key: "<<ll<<std::endl;
-    er = new encrypt_ram(*des_key);
-    std::cout <<"original Test Message= "<< *testMessage << std::endl;
-    er->desEncrypt(*testMessage);
-    std::cout <<"encrypted Test Message= "<< *testMessage << std::endl;
-    er->desDecrypt(*testMessage);
-    std::cout <<"decrypted Test Message= "<< *testMessage << std::endl;
-    
-
+    encrypt_ram* er2;
+    er2 = new encrypt_ram(*des_key2);
+std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":10},\"id\":13527}";
+    resultString = call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    std::cout << resultString << std::endl;
 
     delete testMessage;
-    //delete er;
-    
-    //configuration options (eventually)
- 
- /*   std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
-    std::string rk;
-    std::getline(file, k1);
-    std::cout << k1 << std::endl;*/
+    delete er2;
     return 0;
 }
 
 unsigned long long string_to_ull(std::string input){//wrapper for stoull call
     std::string str = input;
-    for(int i=0; i<str.length(); i++)
+    for(int i=0; i<str.length()&&str.length()!=0; i++)
         if(str[i] == ' '){
             str.erase(i,1);
             i=0;
         }
- //   std::cout << "without space " << str <<std::endl;
-
     std::string::size_type sz = 0;   // alias of size_t
     unsigned long long ll;
-
-        
-     while (!str.empty()){
+    while (!str.empty()){
         ll = std::stoull (str,&sz,0);
         //std::cout << str.substr(0,sz) << " interpreted as " << ll << '\n';
         str = str.substr(sz);
-        
     }
     return ll;
 }
@@ -241,42 +234,33 @@ std::string call_curl(std::string address, std::string arguments){
     CURL *curl;
     CURLcode responseFromRequest;
     std::string resultString;
-    char* pEnd;
-
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    //curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
-        std::cout<<address<<std::endl;
         curl_easy_setopt(curl, CURLOPT_URL, address.c_str());//request this data
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         if (arguments!="NONE"){
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, arguments);
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, arguments.length());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, arguments.c_str());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(arguments.c_str()));
+
         }
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resultString);
         responseFromRequest = curl_easy_perform(curl);
         if (responseFromRequest != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(responseFromRequest));
-
-        
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(responseFromRequest));
         // always cleanup 
+        
         curl_easy_cleanup(curl);
         return resultString;
     }
-
 }
-
-//getKey()
-
 
 bool anyKey(){
     std::cout << "Press any key + enter to continue...x/exit to exit" << std::endl;
     std::string c;
     std::cin >> c;
-
     if (c=="x" || c=="exit"){
         std::getline(std::cin, c);
         return true;

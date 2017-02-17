@@ -1,13 +1,12 @@
-CC=g++
-CFLAGS=-maes -msse4 -std=c++11 
-LDFLAGS=-lcurl
-SOURCES=main.cpp encrypt_ram.cpp
-OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=encram
-all: $(SOURCES) $(EXECUTABLE)
-    
-$(EXECUTABLE): $(OBJECTS) 
-	$(CC)  $(OBJECTS) $(LDFLAGS) -o $@
+CXX = g++
+CXXFILES = main.cpp encrypt_ram.cpp 
 
-.cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+CXXFLAGS = -std=c++11
+CPPFLAGS = -maes -msse4 
+LIBS = -lcurl
+
+all:
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CXXFILES) $(LIBS) 
+
+clean:
+	rm -f prog *.o

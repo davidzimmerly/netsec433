@@ -1,7 +1,7 @@
 CXX = g++
-CXXFILES = main.cpp encrypt_ram.cpp 
+CXXFILES = main.cpp encrypt_ram.cpp
 
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=gnu++11
 CPPFLAGS = -maes -msse4 
 LIBS = -lcurl
 

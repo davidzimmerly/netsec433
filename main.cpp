@@ -40,7 +40,6 @@ int main()
 {
     //configuration options (for json test) 
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
-    curl_global_init(CURL_GLOBAL_DEFAULT); 
     std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
     std::string rk;
     if (!std::getline(file, rk)){
@@ -122,6 +121,43 @@ int main()
 
   //  er2->getNewAESKey(128);
     er2->getNewAESKey(256);//need to change #DEFINE for test as well as key size
+
+
+
+
+    std::string plainTextNew = "jfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoapp89347hfjy8732y4ed7yruedfyf";
+    
+    std::cout << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;
+    ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[256];
+
+        
+    for (int j=0; j<plainTextNew.length(); j++){
+        char a = plainTextNew[j];
+        formattedNewPlainText[j] = (int)a;
+    }
+    for (int j=0; j<plainTextNew.length(); j++){
+        std:: cout << (char)formattedNewPlainText[j];
+    }
+
+
+
+    er2->print_m128i_with_string("",((__m128i*)formattedNewPlainText)[0]);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[1],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[2],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[3],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[4],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[5],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[6],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[7],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[8],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[9],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[10],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[11],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[12],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[13],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[14],16);
+    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[15],16);
+
     //CTR MODE TEST:
     uint8_t *NONCE;
     uint8_t *IV;
@@ -152,14 +188,14 @@ int main()
     DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
     for(i=0 ;i<LENGTH/16/2; i++){
         for(j=0; j<2; j++){
-            _mm_storeu_si128(&((__m128i*)PLAINTEXT)[i*2+j], ((__m128i*)AES_TEST_VECTOR)[j]);
+            _mm_storeu_si128(&((__m128i*)PLAINTEXT)[i*2+j], ((__m128i*)formattedNewPlainText)[j]);
         }
     }
     for(j=i*2 ; j<LENGTH/16; j++){
-        _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j], ((__m128i*)AES_TEST_VECTOR)[j%4]);
+        _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j], ((__m128i*)formattedNewPlainText)[j%4]);
     }
     if (LENGTH%16){
-        _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],((__m128i*)AES_TEST_VECTOR)[j%4]);
+        _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],((__m128i*)formattedNewPlainText)[j%4]);
     }
     er2->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
     er2->AES_CTR_encrypt(PLAINTEXT,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);

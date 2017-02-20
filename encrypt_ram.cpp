@@ -38,10 +38,12 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
 
 encrypt_ram::encrypt_ram(){
     aesKeySize=0;
+    curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 encrypt_ram::encrypt_ram(unsigned long long & key){
 //begin init
+    curl_global_init(CURL_GLOBAL_DEFAULT);
     aesKeySize=0;
     unsigned long long* permutation1;
     permutation1 = permuteKey(key);
@@ -751,21 +753,16 @@ void encrypt_ram::getNewAESKey(int size){
         //std::cout << "#keys= "<<keys<<std::endl;
         std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
         resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
-        //ALIGN16 uint8_t results[keys];
         int keyPosition =0;
         for (int string_pos=0; string_pos<keys*3; string_pos+=3){
             char a = resultString[string_pos];
             char b = resultString[string_pos+1];
             int ai=0,bi=0;
-            //std::cout <<"a="<<a<<std::endl;
-            //std::cout <<"b="<<b<<std::endl;
             if (((a=='\n'))||(((a>=97 && a<=102)||(a>=48 && a<=57))&&((b>=97 && b<=102)||(b>=48 && b<=57)))){//97-102 == a-f 48-57 == 0-9
                 if (a=='\n'){
-                    //std::cout << "reached end of line.." << std::endl;
                     string_pos++;
                     char a = resultString[string_pos];
                     char b = resultString[string_pos+1];
-            
                 }
                 ai = (a>57)?a-87:a-48;
                 bi = (b>57)?b-87:b-48;
@@ -857,7 +854,7 @@ bool encrypt_ram::anyKey(){
     }
 }
 
- size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;

@@ -1,24 +1,11 @@
 #include <string>//std::string
 #include <iostream>//std::cout, std::endl
-#include <cmath>//:think i used this for a pow, need to remove
 #include "encrypt_ram.h"
-//#include <stdint.h>
-#include <curl/curl.h>//for network access
-#include <string.h>//used for a strlen()call could probably remove
 #include <stdlib.h>//for printf support (remove eventually when done with AES drivers)
 #include <fstream>//std::ifstream,file i/o
 
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
-}
-
 
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
-bool anyKey();
-std::string call_curl(std::string address, std::string arguments);
-unsigned long long string_to_ull(std::string input);
 
 ALIGN16 uint8_t CBC_IV[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
 ALIGN16 uint8_t CBC128_EXPECTED[] = {0x76,0x49,0xab,0xac,0x81,0x19,0xb2,0x46,0xce,0xe9,0x8e,0x9b,0x12,0xe9,0x19,0x7d,0x50,0x86,0xcb,0x9b,0x50,0x72,0x19,0xee,0x95,0xdb,0x11,0x3a,0x91,0x76,0x78,0xb2,0x73,0xbe,0xd6,0xb8,0xe3,0xc1,0x74,0x3b,0x71,0x16,0xe6,0x9e,0x22,0x22,0x95,0x16,0x3f,0xf1,0xca,0xa1,0x68,0x1f,0xac,0x09,0x12,0x0e,0xca,0x30,0x75,0x86,0xe1,0xa7};
@@ -56,14 +43,17 @@ int main()
     curl_global_init(CURL_GLOBAL_DEFAULT); 
     std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
     std::string rk;
-    std::getline(file, rk);
-    
-    bool done = false;
-
+    if (!std::getline(file, rk)){
+        std::cout << "cannot find configuration file values in config.txt" <<std::endl;
+        exit(1);
+    }
     unsigned long long* des_key = new unsigned long long;
     *des_key = 1383827165325090801;
     encrypt_ram* er = new encrypt_ram(*des_key);
-    /*while(!done){
+    //initial  memory search hex editor demo:
+    /*
+    bool done = false;
+    while(!done){
 
         std::string message =  "Sammy"; //value is exposed in memory
         er->encrypt(message);
@@ -93,8 +83,6 @@ int main()
 
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
-    //std::cout <<"1Test Message= "<< *testMessage << std::endl;
-    //std::cout <<"1Test Messagehex= "<<std::hex<< *testMessage << std::dec<<std::endl;
     
     er->desEncrypt(*testMessage);
     //std::cout <<"Test Message= "<< *testMessage << std::endl;
@@ -103,7 +91,7 @@ int main()
     
     delete des_key;
     
-    /*AES_KEY key;
+    AES_KEY key;
     AES_KEY decrypt_key;
     uint8_t *PLAINTEXT;
     uint8_t *CIPHERTEXT;
@@ -116,19 +104,38 @@ int main()
         printf("Cpu does not support AES instruction set. Bailing out.\n");
         return 1;
     }
+
+   delete er;
+     
+    //std::string resultString;
+    //resultString = call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE");
+    //unsigned long long ll = string_to_ull(resultString); //this crashes sometimes for me... think my request is too large sometimes need to research
+    //unsigned long long* des_key2 = new unsigned long long;
+    //*des_key2 = getNewLL();
+   // std::cout <<"new key: "<<*des_key2<<std::endl;
+    //json request example:
+    encrypt_ram* er2;
+    er2 = new encrypt_ram();
+  //  std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
+  //  std::string resultString = call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+  //  std::cout << resultString << std::endl;
+
+  //  er2->getNewAESKey(128);
+    er2->getNewAESKey(256);
+  //  getNewAESKey(er2,256);
     //CTR MODE TEST:
     uint8_t *NONCE;
     uint8_t *IV;
     #ifdef AES128
     #define STR "Performing AES128 CTR.\n"
-        CIPHER_KEY = AES128_TEST_KEY;
+        CIPHER_KEY =er2->aesKey;//AES128_TEST_KEY;
         EXPECTED_CIPHERTEXT = CTR128_EXPECTED;
         IV = CTR128_IV;
         NONCE = CTR128_NONCE;
         key_length = 128;
     #elif defined AES192
     #define STR "Performing AES192 CTR.\n"
-        CIPHER_KEY = AES192_TEST_KEY;
+        CIPHER_KEY = er2->aesKey;//AES192_TEST_KEY;
         EXPECTED_CIPHERTEXT = CTR192_EXPECTED;
         IV = CTR192_IV;
         NONCE = CTR192_NONCE;
@@ -155,15 +162,15 @@ int main()
     if (LENGTH%16){
         _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],((__m128i*)AES_TEST_VECTOR)[j%4]);
     }
-    er->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
-    er->AES_CTR_encrypt(PLAINTEXT,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
-    er->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
+    er2->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
+    er2->AES_CTR_encrypt(PLAINTEXT,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
+    er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
     printf("%s\n",STR);
     printf("The Cipher Key:\n");
-    er->print_m128i_with_string("",((__m128i*)CIPHER_KEY)[0]);
+    er2->print_m128i_with_string("",((__m128i*)CIPHER_KEY)[0]);
     if (key_length > 128)
-        er->print_m128i_with_string_short("",((__m128i*)CIPHER_KEY)[1],(key_length/8) -16);
-    printf("The Key Schedule:\n");
+        er2->print_m128i_with_string_short("",((__m128i*)CIPHER_KEY)[1],(key_length/8) -16);
+/*    printf("The Key Schedule:\n");
     for (i=0; i< key.nr; i++)
         er->print_m128i_with_string("",((__m128i*)key.KEY)[i]);
     printf("The PLAINTEXT:\n");
@@ -183,7 +190,8 @@ int main()
         }
     }
     printf("The CIPHERTEXT equals to the EXPECTED CIHERTEXT"
-    " for bytes where expected text was entered.\n\n");
+    " for bytes where expected text was entered.\n\n");*/
+
     for(i=0; i<LENGTH; i++){
         if (DECRYPTEDTEXT[i] != PLAINTEXT[i]){
             printf("The DECRYPTED TEXT is not equal to the original"
@@ -192,23 +200,16 @@ int main()
         }
     }
     printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
-  */  
-    delete er;
-    
-    std::string resultString;
-    resultString = call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE");
-    unsigned long long ll = string_to_ull(resultString); //this crashes sometimes for me... think my request is too large sometimes need to research
-    unsigned long long* des_key2 = new unsigned long long;
-    *des_key2 = ll;
-    std::cout <<"new key: "<<ll<<std::endl;
-    encrypt_ram* er2;
-    er2 = new encrypt_ram(*des_key2);
-std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":10},\"id\":13527}";
-    resultString = call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
-    std::cout << resultString << std::endl;
+
+
+
+
+
+
+
 
     delete testMessage;
-    delete er2;
+    //delete er2;causes segfault??
     return 0;
 }
 
@@ -229,44 +230,3 @@ unsigned long long string_to_ull(std::string input){//wrapper for stoull call
     return ll;
 }
 
-//need input checking on values here! arguments, set to NONE for single line call
-std::string call_curl(std::string address, std::string arguments){
-    CURL *curl;
-    CURLcode responseFromRequest;
-    std::string resultString;
-    //curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, address.c_str());//request this data
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        if (arguments!="NONE"){
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, arguments.c_str());
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(arguments.c_str()));
-
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resultString);
-        responseFromRequest = curl_easy_perform(curl);
-        if (responseFromRequest != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(responseFromRequest));
-        // always cleanup 
-        
-        curl_easy_cleanup(curl);
-        return resultString;
-    }
-}
-
-bool anyKey(){
-    std::cout << "Press any key + enter to continue...x/exit to exit" << std::endl;
-    std::string c;
-    std::cin >> c;
-    if (c=="x" || c=="exit"){
-        std::getline(std::cin, c);
-        return true;
-    }
-    else{
-        std::getline(std::cin, c);
-        return false;
-    }
-}

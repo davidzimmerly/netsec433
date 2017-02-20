@@ -35,8 +35,14 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
     return permutePbit(f_result);
 }
 
+
+encrypt_ram::encrypt_ram(){
+    aesKeySize=0;
+}
+
 encrypt_ram::encrypt_ram(unsigned long long & key){
 //begin init
+    aesKeySize=0;
     unsigned long long* permutation1;
     permutation1 = permuteKey(key);
     unsigned int C[17], D[17]; //16+1 for the initial split
@@ -64,7 +70,9 @@ encrypt_ram::encrypt_ram(unsigned long long & key){
 }
 
 encrypt_ram::~encrypt_ram(){
-
+    if (aesKey!=NULL)
+        delete aesKey;
+        
     for (int x=1; x<=16; x++){
         delete K[x];
     }
@@ -264,7 +272,6 @@ void encrypt_ram::displayBinaryX(unsigned long long input,unsigned int bits){
         if (x%6==0)
             std::cout<<" ";
     }
-
 }
 
 unsigned int encrypt_ram::function_s(int table,int row, int column ){
@@ -360,7 +367,6 @@ __m128i encrypt_ram::AES_128_ASSIST (__m128i temp1, __m128i temp2)
     return temp1;
 }
 
-
 void encrypt_ram::AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key)
 {
     
@@ -414,13 +420,6 @@ void encrypt_ram::AES_ECB_encrypt(const unsigned char *in,unsigned char *out,uns
     //text length in bytes
     //pointer to the expanded key schedule
     //number of AES rounds 10,12 or 14
-
-
-
-
-
-
-
     if(length%16)
         length = length/16+1;
     else
@@ -736,4 +735,130 @@ int encrypt_ram::AES_set_decrypt_key (const unsigned char *userKey,const int bit
     }
     Key_Schedule[0] = Temp_Key_Schedule[nr];
     return 0;
+}
+
+void encrypt_ram::getNewAESKey(int size){
+    
+    int keys=0;
+    std::string resultString="";
+    if (size==128 || size==192 || size==256){
+        keys=size/8;
+        aesKeySize=size;
+        if (aesKey!=NULL)
+            delete aesKey;
+        aesKey = new ALIGN16 uint8_t[keys];
+
+        //std::cout << "#keys= "<<keys<<std::endl;
+        std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
+        resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
+        //ALIGN16 uint8_t results[keys];
+        int keyPosition =0;
+        for (int string_pos=0; string_pos<keys*3; string_pos+=3){
+            char a = resultString[string_pos];
+            char b = resultString[string_pos+1];
+            int ai=0,bi=0;
+            //std::cout <<"a="<<a<<std::endl;
+            //std::cout <<"b="<<b<<std::endl;
+            if (((a=='\n'))||(((a>=97 && a<=102)||(a>=48 && a<=57))&&((b>=97 && b<=102)||(b>=48 && b<=57)))){//97-102 == a-f 48-57 == 0-9
+                if (a=='\n'){
+                    //std::cout << "reached end of line.." << std::endl;
+                    string_pos++;
+                    char a = resultString[string_pos];
+                    char b = resultString[string_pos+1];
+            
+                }
+                ai = (a>57)?a-87:a-48;
+                bi = (b>57)?b-87:b-48;
+
+            }
+            else 
+            {
+                std::cout <<"Invalid Input "", exiting."<<std::endl;
+                exit(1);
+            }
+            //results[keyPosition++]= ai*16 + bi;
+            aesKey[string_pos/3] = ai*16 + bi;
+        }
+        //how to print key values > 128:
+        //encrypt_ram::print_m128i_with_string("",((__m128i*)results)[0]);
+        //if (keys > 128)
+          //  encrypt_ram::print_m128i_with_string_short("",((__m128i*)results)[1],(keys/8) -16);
+    
+        
+    }       
+    else{//need this sort of input validation on functions when possible
+        std::cout << "Invalid Input, exiting Program."<<std::endl;
+        exit(1);
+    }
+    
+
+
+
+    //return string_to_ull(resultString); //this crashes sometimes for me... think my request is too large sometimes need to research
+    //std::cout << resultString << std::endl;
+}
+
+unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for stoull call
+    std::string str = input;
+    for(int i=0; i<str.length()&&str.length()!=0; i++)
+        if(str[i] == ' '){
+            str.erase(i,1);
+            i=0;
+        }
+    std::string::size_type sz = 0;   // alias of size_t
+    unsigned long long ll;
+    while (!str.empty()){
+        ll = std::stoull (str,&sz,0);
+        //std::cout << str.substr(0,sz) << " interpreted as " << ll << '\n';
+        str = str.substr(sz);
+    }
+    return ll;
+}
+
+//need input checking on values here! arguments, set to NONE for single line call
+std::string encrypt_ram::call_curl(std::string address, std::string arguments){
+    CURL *curl;
+    CURLcode responseFromRequest;
+    std::string resultString;
+    //curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, address.c_str());//request this data
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        if (arguments!="NONE"){
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, arguments.c_str());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(arguments.c_str()));
+
+        }
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, encrypt_ram::WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resultString);
+        responseFromRequest = curl_easy_perform(curl);
+        if (responseFromRequest != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(responseFromRequest));
+        // always cleanup 
+        
+        curl_easy_cleanup(curl);
+        return resultString;
+    }
+}
+
+bool encrypt_ram::anyKey(){
+    std::cout << "Press any key + enter to continue...x/exit to exit" << std::endl;
+    std::string c;
+    std::cin >> c;
+    if (c=="x" || c=="exit"){
+        std::getline(std::cin, c);
+        return true;
+    }
+    else{
+        std::getline(std::cin, c);
+        return false;
+    }
+}
+
+ size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
 }

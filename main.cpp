@@ -198,7 +198,7 @@ int main()
         _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],((__m128i*)formattedNewPlainText)[j%4]);
     }
     er2->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
-    er2->AES_CTR_encrypt(PLAINTEXT,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
+    er2->AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
     er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
     printf("%s\n",STR);
     printf("The Cipher Key:\n");
@@ -228,17 +228,31 @@ int main()
     " for bytes where expected text was entered.\n\n");*/
 
     for(i=0; i<LENGTH; i++){
-        if (DECRYPTEDTEXT[i] != PLAINTEXT[i]){
+        if (DECRYPTEDTEXT[i] != formattedNewPlainText[i]){
             printf("The DECRYPTED TEXT is not equal to the original"
             "PLAINTEXT.\n\n");
             return 1;
         }
     }
     printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
-
-
-
-
+    std::cout << plainTextNew << std::endl;
+    for (int j=0; j<plainTextNew.length(); j++){
+        std:: cout << (char)formattedNewPlainText[j];
+    }
+    std::cout<<std::endl;
+    
+    for (int j=0; j<plainTextNew.length(); j++){
+        std:: cout << (char)PLAINTEXT[j];
+    }
+    std::cout<<std::endl;
+    std::string output;
+    for (int j=0; j<plainTextNew.length(); j++){
+        //std::cout << (char)DECRYPTEDTEXT[j];
+        output+=(char)DECRYPTEDTEXT[j];
+    }
+    std::cout<<output<<std::endl;
+    if (output.compare("plainTextNew"))
+        std::cout << "string is same as original" << std::endl;
 
 
 

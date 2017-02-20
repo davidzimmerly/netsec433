@@ -11,7 +11,7 @@
 #endif
 #endif
 #ifndef LENGTH
-#define LENGTH 256
+#define LENGTH 1024
 #endif
 
 #include <cstdio>

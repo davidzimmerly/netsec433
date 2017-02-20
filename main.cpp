@@ -121,8 +121,7 @@ int main()
   //  std::cout << resultString << std::endl;
 
   //  er2->getNewAESKey(128);
-    er2->getNewAESKey(256);
-  //  getNewAESKey(er2,256);
+    er2->getNewAESKey(256);//need to change #DEFINE for test as well as key size
     //CTR MODE TEST:
     uint8_t *NONCE;
     uint8_t *IV;

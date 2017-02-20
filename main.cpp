@@ -142,7 +142,7 @@ int main()
         key_length = 192;
     #elif defined AES256
     #define STR "Performing AES256 CTR.\n"
-        CIPHER_KEY = er->aesKey;//AES256_TEST_KEY;
+        CIPHER_KEY = er2->aesKey;//AES256_TEST_KEY;
         EXPECTED_CIPHERTEXT = CTR256_EXPECTED;
         IV = CTR256_IV;
         NONCE = CTR256_NONCE;
@@ -209,6 +209,6 @@ int main()
 
 
     delete testMessage;
-    //delete er2;causes segfault??
+    delete er2;
     return 0;
 }

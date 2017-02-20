@@ -73,7 +73,7 @@ encrypt_ram::~encrypt_ram(){
     if (aesKey!=NULL)
         delete aesKey;
         
-    for (int x=1; x<=16; x++){
+    for (int x=1; x<16; x++){
         delete K[x];
     }
 }

@@ -142,7 +142,7 @@ int main()
         key_length = 192;
     #elif defined AES256
     #define STR "Performing AES256 CTR.\n"
-        CIPHER_KEY = AES256_TEST_KEY;
+        CIPHER_KEY = er->aesKey;//AES256_TEST_KEY;
         EXPECTED_CIPHERTEXT = CTR256_EXPECTED;
         IV = CTR256_IV;
         NONCE = CTR256_NONCE;
@@ -212,21 +212,3 @@ int main()
     //delete er2;causes segfault??
     return 0;
 }
-
-unsigned long long string_to_ull(std::string input){//wrapper for stoull call
-    std::string str = input;
-    for(int i=0; i<str.length()&&str.length()!=0; i++)
-        if(str[i] == ' '){
-            str.erase(i,1);
-            i=0;
-        }
-    std::string::size_type sz = 0;   // alias of size_t
-    unsigned long long ll;
-    while (!str.empty()){
-        ll = std::stoull (str,&sz,0);
-        //std::cout << str.substr(0,sz) << " interpreted as " << ll << '\n';
-        str = str.substr(sz);
-    }
-    return ll;
-}
-

@@ -1,8 +1,19 @@
 #include <string>//std::string
 #include <iostream>//std::cout, std::endl
+#include "encrypt_ram_rsa.h"
 #include "encrypt_ram.h"
 #include <stdlib.h>//for printf support (remove eventually when done with AES drivers)
 #include <fstream>//std::ifstream,file i/o
+
+/*
+#include <iomanip>
+#include <cmath>
+#include <curl/curl.h>
+#include <stdio.h>
+#include <ctime>
+#include <sstream>
+#include <math.h>
+*/
 
 
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
@@ -53,24 +64,17 @@ int main()
     /*
     bool done = false;
     while(!done){
-
         std::string message =  "Sammy"; //value is exposed in memory
         er->encrypt(message);
-
         //value is encrypted in memory
-
         std::cout << "Encrypted: " << message<< std::endl;
         done = anyKey();
-
         if (!done){
             er->decrypt(message);
-
             //value is exposed in memory
-
             std::cout << "Decrypted: " << message<< std::endl;
             done = anyKey();
         }
-
         //need to re-decrypt to access again, needs to be cleared to get out of memory
         if (!done){
             std::cout<< "re encrypt decrypted value"<< std::endl;
@@ -254,10 +258,68 @@ int main()
     if (output.compare("plainTextNew"))
         std::cout << "string is same as original" << std::endl;
 
-
-
-
     delete testMessage;
     delete er2;
+	
+	/*
+	// RSA - Because this takes an inordinate amount of time to run,
+	// it asks the user if they'd like to opt out
+	std::string answer = "";
+	bool rsa_true = false;
+	while(true){
+		std::cout << "\nAttempt RSA encryption? (May take a while) Y/N ";
+		std::cin >> answer;
+		if (answer == "n" || answer == "no" || answer == "No" || answer == "N"){
+			std::cout << "No RSA encryption then..." << std::endl;
+			break;
+		} else if (answer == "y" || answer == "yes" || answer == "Yes" || answer == "Y"){
+			rsa_true = true;
+			std::cout << "RSA encryption continues..." << std::endl;
+			break;
+		}
+		std::cout << "Not a valid choice - try again" << std::endl;
+	}
+
+	if (rsa_true){
+		encrypt_ram_rsa * rsa = new encrypt_ram_rsa;
+		
+		srand(time(0));
+		
+		// Gets string and int from user
+		while (true) {
+			std::cout << "Enter your name: ";
+			std::cin >> rsa->name;
+			
+			std::cout << "Enter your PIN: ";
+			std::cin >> rsa->pin;
+
+			std::cout << std::endl;
+			std::cout << "First name: " << rsa->name << " at " << &rsa->name << std::endl;
+			std::cout << "PIN: " << rsa->pin << " at " << &rsa->pin << std::endl;
+
+			break;
+		}
+		
+		rsa->generateValues();
+		
+		std::cout << "\nPrime 1: " << rsa->p << std::endl;
+		std::cout << "Prime 2: " << rsa->q << std::endl;
+		std::cout << "N: " << rsa->n << std::endl;
+		std::cout << "Totient: " << rsa->totient << std::endl;
+		std::cout << "E: " << rsa->e << std::endl;
+		std::cout << "D: " << rsa->d << std::endl;
+		
+		std::cout << "\nEncrypting name (this will take a while)..." << std::endl;
+		
+		rsa->encryptString();
+		rsa->decryptString();
+		
+		std::cout << "Encrypting PIN (this will take a while)..." << std::endl;
+		
+		rsa->encryptPIN();
+		rsa->decryptPIN();
+	}
+	*/
+	
     return 0;
 }

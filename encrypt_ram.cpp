@@ -25,16 +25,11 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
         unsigned int result = function_s(x+1,row[x],col[x]);
         for (int x=3; x>=0; x--){
             setBit(f_result,position2--,checkBit(result,x) );
-
         }
-
     }
     delete e;
-    //delete data;
-    //delete key;
     return permutePbit(f_result);
 }
-
 
 encrypt_ram::encrypt_ram(){
     aesKeySize=0;
@@ -65,13 +60,10 @@ encrypt_ram::encrypt_ram(unsigned long long & key){
         D[x] = D[x-1];
         leftShift(C[x]);
         leftShift(D[x]);
-
         if (x>=3 && x!=16 && x!=9){
             leftShift(C[x]);
             leftShift(D[x]);
-
         }
-
     }
     for (int x=1; x<=16; x++){
         K[x] = permuteKey2(C[x],D[x]);
@@ -90,7 +82,6 @@ encrypt_ram::~encrypt_ram(){
 }
 
 void encrypt_ram::desEncrypt(unsigned long long & message){
-
     unsigned long long* initialPermutation;
     initialPermutation = permuteInitial(message);
     unsigned int *l[17], *r[17];
@@ -99,8 +90,6 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
     r[0] = new unsigned int;
     *r[0] = 0;
     bitwiseSplit(*initialPermutation,*l[0],*r[0]);
-
-
     for (int n = 1 ; n<=16 ; n++){
         l[n] = new unsigned int;
         *l[n] = 0;
@@ -108,15 +97,10 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
         r[n] = function_f(r[n-1],K[n]);//^*l[0];
         *r[n] = (*r[n])^(*l[n-1]);
     }
-
-
     unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
     unsigned long long* finalPermutation = permuteFinal(val);
-
-    //this may need to change, the behavior should switch the values (currently nothing was done with value)
+    //this may need to change, the behavior switchs the values 
     message =*finalPermutation;
-
-
     //sample output
     //displayBinary(*finalPermutation);
     //std::cout << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
@@ -132,7 +116,6 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
 }
 
 void encrypt_ram::desDecrypt(unsigned long long & message){
-
     unsigned long long* initialPermutation;
     initialPermutation = permuteInitial(message);
     unsigned int *l[17], *r[17];
@@ -141,8 +124,6 @@ void encrypt_ram::desDecrypt(unsigned long long & message){
     r[0] = new unsigned int;
     *r[0] = 0;
     bitwiseSplit(*initialPermutation,*l[0],*r[0]);
-
-
     for (int n = 1 ; n<=16 ; n++){
         l[n] = new unsigned int;
         *l[n] = 0;
@@ -150,19 +131,10 @@ void encrypt_ram::desDecrypt(unsigned long long & message){
         r[n] = function_f(r[n-1],K[17-n]);//^*l[0];
         *r[n] = (*r[n])^(*l[n-1]);
     }
-
-
     unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
     unsigned long long* finalPermutation = permuteFinal(val);
-
-    //this may need to change, the behavior should switch the values (currently nothing was done with value)
+    //this may need to change, the behavior switchs the values
     message =*finalPermutation;
-
-
-    //sample output
-    //displayBinary(*finalPermutation);
-    //std::cout << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
-    //std::cout << "this is decimal equivalent: " << *finalPermutation << std::dec<<std::endl;
     //cleanup
     delete initialPermutation;
     delete finalPermutation;
@@ -170,11 +142,7 @@ void encrypt_ram::desDecrypt(unsigned long long & message){
         delete l[n];
         delete r[n];
     }
-
 }
-
-
-
 
 //we probably want some functionality to clear all variable values on exit??
 void encrypt_ram::leftShift(unsigned int &input){
@@ -191,16 +159,11 @@ unsigned long long* encrypt_ram::permuteKey(unsigned long long &input){
         changeBit(*permutation,55-x,checkBit(input,63-pc_1[x]+1));
     }
     input = 0;
-
     return permutation;
 }
 unsigned long long* encrypt_ram::permuteKey2(unsigned int &left, unsigned int &right){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
-    //unsigned int bits = 28;//must be unsigned for displayBinaryX for bits above 31, cannot promote int constant
-    //displayBinaryX(left,bits);
-    //displayBinaryX(right,bits);
-    //std::cout<<std::endl;
     for (int x=0; x<48; x++){//set 48 bit key, the upper bits should be blank
         int bit = pc_2[x];
         bool bitValue;
@@ -211,11 +174,11 @@ unsigned long long* encrypt_ram::permuteKey2(unsigned int &left, unsigned int &r
             bitValue = checkBit(right,56-bit);
         }
         changeBit(*permutation,47-x,bitValue);
-
     }
     left = right = 0;
     return permutation;
 }
+
 unsigned long long * encrypt_ram::permuteInitial(unsigned long long &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
@@ -224,8 +187,8 @@ unsigned long long * encrypt_ram::permuteInitial(unsigned long long &message){
     }
     message = 0;
     return permutation;
-
 }//should make this modular and combine permutation functions
+
 unsigned long long * encrypt_ram::permuteEbit(unsigned int &message){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
@@ -243,7 +206,6 @@ unsigned long long * encrypt_ram::permuteFinal(unsigned long long &message){
     }
     message = 0;
     return permutation;
-
 }
 
 unsigned int * encrypt_ram::permutePbit(unsigned int &message){
@@ -286,9 +248,7 @@ void encrypt_ram::displayBinaryX(unsigned long long input,unsigned int bits){
 }
 
 unsigned int encrypt_ram::function_s(int table,int row, int column ){
-   // std::cout << "starting function s with table="<<table<<" row="<<row<<" column="<<column<<std::endl;
    int address = (row) * 16 + (column);
-   //std::cout <<"address= "<<address<<std::endl;
    switch(table){
     case 1:
         return s1[address];
@@ -353,7 +313,6 @@ int encrypt_ram::Check_CPU_support_AES()
     return (c & 0x2000000);
 }
 
-
 void encrypt_ram::print_m128i_with_string(char const* string,__m128i data)
 {
     unsigned char *pointer = (unsigned char*)&data;
@@ -380,8 +339,6 @@ __m128i encrypt_ram::AES_128_ASSIST (__m128i temp1, __m128i temp2)
 
 void encrypt_ram::AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key)
 {
-    
-
     __m128i temp1, temp2;
     __m128i *Key_Schedule = (__m128i*)key;
     temp1 = _mm_loadu_si128((__m128i*)userkey);
@@ -416,10 +373,7 @@ void encrypt_ram::AES_128_Key_Expansion (const unsigned char *userkey,const unsi
     temp2 = _mm_aeskeygenassist_si128 (temp1,0x36);
     temp1 = AES_128_ASSIST(temp1, temp2);
     Key_Schedule[10] = temp1;
-
-    
 }
-
 
 /* Note – the length of the output buffer is assumed to be a multiple of 16 bytes */
 void encrypt_ram::AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds)
@@ -447,8 +401,8 @@ void encrypt_ram::AES_ECB_encrypt(const unsigned char *in,unsigned char *out,uns
     }
 
 }
-void encrypt_ram::AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,
-const char *key,int number_of_rounds)
+
+void encrypt_ram::AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds)
 {
     __m128i tmp;
     unsigned int i;
@@ -459,27 +413,19 @@ const char *key,int number_of_rounds)
     //pointer to the expanded key schedule
     //number of AES rounds 10,12 or 14
     if(length%16)
-    length = length/16+1;
+        length = length/16+1;
     else
-    length = length/16;
+        length = length/16;
     for(i=0; i < length; i++){
-    tmp = _mm_loadu_si128 (&((__m128i*)in)[i]);
-    tmp = _mm_xor_si128 (tmp,((__m128i*)key)[0]);
-    for(j=1; j <number_of_rounds; j++){
-    tmp = _mm_aesdec_si128 (tmp,((__m128i*)key)[j]);
-    }
-    tmp = _mm_aesdeclast_si128 (tmp,((__m128i*)key)[j]);
-    _mm_storeu_si128 (&((__m128i*)out)[i],tmp);
+        tmp = _mm_loadu_si128 (&((__m128i*)in)[i]);
+        tmp = _mm_xor_si128 (tmp,((__m128i*)key)[0]);
+        for(j=1; j <number_of_rounds; j++){
+            tmp = _mm_aesdec_si128 (tmp,((__m128i*)key)[j]);
+        }
+        tmp = _mm_aesdeclast_si128 (tmp,((__m128i*)key)[j]);
+        _mm_storeu_si128 (&((__m128i*)out)[i],tmp);
     }
 }
-
-
-
-
-/*****************************************************************************/
-
-
-
 
 void encrypt_ram::KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp3)
 {
@@ -497,9 +443,10 @@ void encrypt_ram::KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp
     *temp3 = _mm_xor_si128 (*temp3, temp4);
     *temp3 = _mm_xor_si128 (*temp3, *temp2);
 }
+
 void encrypt_ram::AES_192_Key_Expansion (const unsigned char *userkey,unsigned char *key)
 {
-    __m128i temp1, temp2, temp3;//  , temp4;
+    __m128i temp1, temp2, temp3;
     __m128i *Key_Schedule = (__m128i*)key;
     temp1 = _mm_loadu_si128((__m128i*)userkey);
     temp3 = _mm_loadu_si128((__m128i*)(userkey+16));
@@ -540,6 +487,7 @@ void encrypt_ram::AES_192_Key_Expansion (const unsigned char *userkey,unsigned c
     KEY_192_ASSIST(&temp1, &temp2, &temp3);
     Key_Schedule[12]=temp1;
 }
+
 void encrypt_ram::KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2)
 {
     __m128i temp4;
@@ -552,6 +500,7 @@ void encrypt_ram::KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2)
     *temp1 = _mm_xor_si128 (*temp1, temp4);
     *temp1 = _mm_xor_si128 (*temp1, *temp2);
 }
+
 void encrypt_ram::KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3)
 {
     __m128i temp2,temp4;
@@ -565,6 +514,7 @@ void encrypt_ram::KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3)
     *temp3 = _mm_xor_si128 (*temp3, temp4);
     *temp3 = _mm_xor_si128 (*temp3, temp2);
 }
+
 void encrypt_ram::AES_256_Key_Expansion (const unsigned char *userkey,const unsigned char *key)
 {
     __m128i temp1, temp2, temp3;
@@ -608,19 +558,15 @@ void encrypt_ram::AES_256_Key_Expansion (const unsigned char *userkey,const unsi
     Key_Schedule[14]=temp1;
 }
 
-
-
-
-
-void encrypt_ram::AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],
-unsigned long length,unsigned char *key,int number_of_rounds){
+void encrypt_ram::AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds){
     __m128i feedback,data;
     unsigned int i;
     int j;
     if (length%16)
         length = length/16+1;
-    else length /=16;
-        feedback=_mm_loadu_si128 ((__m128i*)ivec);
+    else 
+        length /=16;
+    feedback=_mm_loadu_si128 ((__m128i*)ivec);
     for(i=0; i < length; i++){
         data = _mm_loadu_si128 (&((__m128i*)in)[i]);
         feedback = _mm_xor_si128 (data,feedback);
@@ -631,15 +577,16 @@ unsigned long length,unsigned char *key,int number_of_rounds){
         _mm_storeu_si128 (&((__m128i*)out)[i],feedback);
     }
 }
-void encrypt_ram::AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],
-unsigned long length,unsigned char *key,int number_of_rounds)
+
+void encrypt_ram::AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds)
 {
     __m128i data,feedback,last_in;
     unsigned int i;
     int j;
     if (length%16)
-    length = length/16+1;
-    else length /=16;
+        length = length/16+1;
+    else
+        length /=16;
     feedback=_mm_loadu_si128 ((__m128i*)ivec);
     for(i=0; i < length; i++){
         last_in=_mm_loadu_si128 (&((__m128i*)in)[i]);
@@ -654,16 +601,15 @@ unsigned long length,unsigned char *key,int number_of_rounds)
     }
 }
 
-
-void encrypt_ram::AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],
-const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds)
+void encrypt_ram::AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds)
 {
     __m128i ctr_block, tmp, ONE, BSWAP_EPI64;
     unsigned int i;
     int j;
     if (length%16)
-    length = length/16 + 1;
-    else length/=16;
+        length = length/16 + 1;
+    else 
+        length/=16;
     ONE = _mm_set_epi32(0,1,0,0);
     BSWAP_EPI64 = _mm_setr_epi8(7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8);
     ctr_block = _mm_setzero_si128();
@@ -763,11 +709,8 @@ void encrypt_ram::getNewAESKey(int size){
         if (aesKey!=NULL)
             delete[] aesKey;
         aesKey = new ALIGN16 uint8_t[keys];
-
-        //std::cout << "#keys= "<<keys<<std::endl;
         std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
         resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
-        //int keyPosition =0;
         //note this is extremely format sensitive string manipulation..probably need to change for modularization
         for (unsigned int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
             char a = resultString[string_pos];
@@ -781,33 +724,23 @@ void encrypt_ram::getNewAESKey(int size){
                 }
                 ai = (a>57)?a-87:a-48;
                 bi = (b>57)?b-87:b-48;
-
             }
             else 
             {
                 std::cout <<"Invalid Input "", exiting."<<std::endl;
                 exit(1);
             }
-            //results[keyPosition++]= ai*16 + bi;
             aesKey[string_pos/3] = ai*16 + bi;
         }
         //how to print key values > 128:
         //encrypt_ram::print_m128i_with_string("",((__m128i*)results)[0]);
         //if (keys > 128)
           //  encrypt_ram::print_m128i_with_string_short("",((__m128i*)results)[1],(keys/8) -16);
-    
-        
     }       
     else{//need this sort of input validation on functions when possible
         std::cout << "Invalid Input, exiting Program."<<std::endl;
         exit(1);
     }
-    
-
-
-
-    //return string_to_ull(resultString); //this crashes sometimes for me... think my request is too large sometimes need to research
-    //std::cout << resultString << std::endl;
 }
 
 unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for stoull call
@@ -821,7 +754,6 @@ unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for s
     unsigned long long ll;
     while (!str.empty()){
         ll = std::stoull (str,&sz,0);
-        //std::cout << str.substr(0,sz) << " interpreted as " << ll << '\n';
         str = str.substr(sz);
     }
     return ll;
@@ -851,9 +783,7 @@ std::string encrypt_ram::call_curl(std::string address, std::string arguments){
             exit(1);
         }
         // always cleanup 
-        
         curl_easy_cleanup(curl);
-        
     }
     return resultString;
 }

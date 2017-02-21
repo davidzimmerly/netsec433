@@ -79,20 +79,17 @@ int main()
 
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
-    /*
+    
     er->desEncrypt(*testMessage);
     std::cout <<"Test Message= "<< *testMessage << std::endl;
     er->desDecrypt(*testMessage);
     std::cout <<"Test Message= "<< *testMessage << std::endl;
-    */
+    
     delete des_key;
     unsigned long long* des_key2=new unsigned long long;
     AES_KEY key;
-    uint8_t *CIPHERTEXT;
-    uint8_t *DECRYPTEDTEXT;
-    uint8_t *CIPHER_KEY;
-    int i;
-    int key_length;
+    uint8_t *CIPHERTEXT,*DECRYPTEDTEXT,*CIPHER_KEY;
+    int i, key_length;
     
 
     delete er;
@@ -121,10 +118,8 @@ int main()
     for (uint j=0; j<plainTextNew.length(); j++){
         formattedNewPlainText[j] = plainTextNew[j];
     }
-
     //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
-    
 
     //CTR MODE TEST:
     uint8_t *NONCE;
@@ -155,11 +150,9 @@ int main()
     er2->AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
     er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
     printf("%s\n",STR);
-
     for(i=0; i<LENGTH; i++){
         if (DECRYPTEDTEXT[i] != formattedNewPlainText[i]){
-            printf("The DECRYPTED TEXT is not equal to the original"
-            "PLAINTEXT.\n\n");
+            printf("The DECRYPTED TEXT is not equal to the original PLAINTEXT.\n\n");
             return 1;
         }
     }

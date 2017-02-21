@@ -111,7 +111,7 @@ class encrypt_ram{
         encrypt_ram(unsigned long long & key);
         ~encrypt_ram();
         void encrypt(std::string &message){
-            for (int x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
+            for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
         }
         void decrypt(std::string &message){
            encrypt(message);

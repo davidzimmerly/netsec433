@@ -4,18 +4,6 @@
 #include "encrypt_ram.h"
 #include <stdlib.h>//for printf support (remove eventually when done with AES drivers)
 #include <fstream>//std::ifstream,file i/o
-
-/*
-#include <iomanip>
-#include <cmath>
-#include <curl/curl.h>
-#include <stdio.h>
-#include <ctime>
-#include <sstream>
-#include <math.h>
-*/
-
-
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
 
 ALIGN16 uint8_t CBC_IV[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
@@ -58,10 +46,14 @@ int main()
         exit(1);
     }
     file.close();
-    /*unsigned long long* des_key = new unsigned long long;
+    unsigned long long* des_key = new unsigned long long;
     *des_key = 1383827165325090801;
     encrypt_ram* er = new encrypt_ram(*des_key);
-    //initial  memory search hex editor demo:
+    if (!er->Check_CPU_support_AES()){
+        printf("Cpu does not support AES instruction set. Bailing out.\n");
+        return 1;
+    }
+    //initial  memory search hex editor demo:*/
     /*
     bool done = false;
     while(!done){
@@ -69,72 +61,64 @@ int main()
         er->encrypt(message);
         //value is encrypted in memory
         std::cout << "Encrypted: " << message<< std::endl;
-        done = anyKey();
+        done = er->anyKey();
         if (!done){
             er->decrypt(message);
             //value is exposed in memory
             std::cout << "Decrypted: " << message<< std::endl;
-            done = anyKey();
+            done = er->anyKey();
         }
         //need to re-decrypt to access again, needs to be cleared to get out of memory
         if (!done){
             std::cout<< "re encrypt decrypted value"<< std::endl;
             er->encrypt(message);
-            done = anyKey();
+            done = er->anyKey();
         }
-    }
+    }*/
     
 
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
-    
+    /*
     er->desEncrypt(*testMessage);
-    //std::cout <<"Test Message= "<< *testMessage << std::endl;
+    std::cout <<"Test Message= "<< *testMessage << std::endl;
     er->desDecrypt(*testMessage);
-    //std::cout <<"Test Message= "<< *testMessage << std::endl;
-    
-    delete des_key;*/
+    std::cout <<"Test Message= "<< *testMessage << std::endl;
+    */
+    delete des_key;
+    unsigned long long* des_key2=new unsigned long long;
     AES_KEY key;
-    AES_KEY decrypt_key;
     uint8_t *CIPHERTEXT;
     uint8_t *DECRYPTEDTEXT;
-    uint8_t *EXPECTED_CIPHERTEXT;
     uint8_t *CIPHER_KEY;
-    int i,j;
+    int i;
     int key_length;
-  /*  if (!er->Check_CPU_support_AES()){
+    
+
+    delete er;
+    encrypt_ram* er2; 
+    er2 = new encrypt_ram();
+    if (!er2->Check_CPU_support_AES()){
         printf("Cpu does not support AES instruction set. Bailing out.\n");
         return 1;
-    }*/
-
-//   delete er;
-     
-    //std::string resultString;
-    //resultString = call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE");
-    //unsigned long long ll = string_to_ull(resultString); //this crashes sometimes for me... think my request is too large sometimes need to research
-    //unsigned long long* des_key2 = new unsigned long long;
-    //*des_key2 = getNewLL();
-   // std::cout <<"new key: "<<*des_key2<<std::endl;
+    }
+    *des_key2 = er2->getNewLL();
+    std::cout <<"new key: "<<*des_key2<<std::endl;
     //json request example:
-    encrypt_ram* er2;
-    er2 = new encrypt_ram();
-  //  std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
-  //  std::string resultString = call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
-  //  std::cout << resultString << std::endl;
-
-  //  er2->getNewAESKey(128);
-    er2->getNewAESKey(256);//need to change #DEFINE for test as well as key size
+    std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
+    std::string resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    std::cout << resultString << std::endl;
 
 
-
-
+    //aes new key / new text example:
+    er2->getNewAESKey(256);//need to change #DEFINE for test as well as key size and LENGTH =thisx2
     std::string plainTextNew = "jfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoapp89347hfjy8732y4ed7yruedfyf";
     
-    //std::cout << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;
+    //std::cout << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;//256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[256];
 
     //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
-    for (int j=0; j<plainTextNew.length(); j++){
+    for (uint j=0; j<plainTextNew.length(); j++){
         formattedNewPlainText[j] = plainTextNew[j];
     }
 
@@ -148,26 +132,22 @@ int main()
     #ifdef AES128
     #define STR "Performing AES128 CTR.\n"
         CIPHER_KEY =er2->aesKey;//AES128_TEST_KEY;
-        EXPECTED_CIPHERTEXT = CTR128_EXPECTED;
         IV = CTR128_IV;
         NONCE = CTR128_NONCE;
         key_length = 128;
     #elif defined AES192
     #define STR "Performing AES192 CTR.\n"
         CIPHER_KEY = er2->aesKey;//AES192_TEST_KEY;
-        EXPECTED_CIPHERTEXT = CTR192_EXPECTED;
         IV = CTR192_IV;
         NONCE = CTR192_NONCE;
         key_length = 192;
     #elif defined AES256
     #define STR "Performing AES256 CTR.\n"
         CIPHER_KEY = er2->aesKey;//AES256_TEST_KEY;
-        EXPECTED_CIPHERTEXT = CTR256_EXPECTED;
         IV = CTR256_IV;
         NONCE = CTR256_NONCE;
         key_length = 256;
     #endif
-    //PLAINTEXT = (uint8_t*)malloc(LENGTH);
     CIPHERTEXT = (uint8_t*)malloc(LENGTH);
     DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
     
@@ -175,31 +155,6 @@ int main()
     er2->AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
     er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
     printf("%s\n",STR);
-/*    printf("The Cipher Key:\n");
-    er2->print_m128i_with_string("",((__m128i*)CIPHER_KEY)[0]);
-    if (key_length > 128)
-        er2->print_m128i_with_string_short("",((__m128i*)CIPHER_KEY)[1],(key_length/8) -16);
-    printf("The Key Schedule:\n");
-    for (i=0; i< key.nr; i++)
-        er->print_m128i_with_string("",((__m128i*)key.KEY)[i]);
-    printf("The PLAINTEXT:\n");
-    for (i=0; i< LENGTH/16; i++)
-        er->print_m128i_with_string("",((__m128i*)PLAINTEXT)[i]);
-    if (LENGTH%16)
-        er->print_m128i_with_string_short("",((__m128i*)PLAINTEXT)[i],LENGTH%16);
-    printf("\n\nThe CIPHERTEXT:\n");
-    for (i=0; i< LENGTH/16; i++)
-        er->print_m128i_with_string("",((__m128i*)CIPHERTEXT)[i]);
-    if (LENGTH%16)
-        er->print_m128i_with_string_short("",((__m128i*)CIPHERTEXT)[i],LENGTH%16);
-    for(i=0; i< ((32<LENGTH)? 32 : LENGTH); i++){
-        if (CIPHERTEXT[i] != EXPECTED_CIPHERTEXT[i%(16*2)]){
-            printf("The ciphertext is not equal to the expected ciphertext.\n\n");
-            return 1;
-        }
-    }
-    printf("The CIPHERTEXT equals to the EXPECTED CIHERTEXT"
-    " for bytes where expected text was entered.\n\n");*/
 
     for(i=0; i<LENGTH; i++){
         if (DECRYPTEDTEXT[i] != formattedNewPlainText[i]){
@@ -210,7 +165,7 @@ int main()
     }
     printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
     std::string output;
-    for (int j=0; j<plainTextNew.length(); j++){
+    for (uint j=0; j<plainTextNew.length(); j++){
         output+=(char)DECRYPTEDTEXT[j];
     }
     if (output.compare(plainTextNew)==0)
@@ -274,9 +229,10 @@ int main()
 		
 		rsa->encryptPIN();
 		rsa->decryptPIN();
-	}
-	*/
+	}*/
 	
+	delete des_key2;
+    delete testMessage;
     free(CIPHERTEXT);
     free(DECRYPTEDTEXT);
     delete[] formattedNewPlainText;

@@ -197,7 +197,7 @@ unsigned long long* encrypt_ram::permuteKey(unsigned long long &input){
 unsigned long long* encrypt_ram::permuteKey2(unsigned int &left, unsigned int &right){
     unsigned long long* permutation= new unsigned long long;
     *permutation = 0;
-    unsigned int bits = 28;//must be unsigned for displayBinaryX for bits above 31, cannot promote int constant
+    //unsigned int bits = 28;//must be unsigned for displayBinaryX for bits above 31, cannot promote int constant
     //displayBinaryX(left,bits);
     //displayBinaryX(right,bits);
     //std::cout<<std::endl;
@@ -425,7 +425,8 @@ void encrypt_ram::AES_128_Key_Expansion (const unsigned char *userkey,const unsi
 void encrypt_ram::AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds)
 {
     __m128i tmp;
-    int i,j;
+    unsigned int i;
+    int j;
     //pointer to the PLAINTEXT
     //pointer to the CIPHERTEXT buffer
     //text length in bytes
@@ -450,7 +451,8 @@ void encrypt_ram::AES_ECB_decrypt(const unsigned char *in,unsigned char *out,uns
 const char *key,int number_of_rounds)
 {
     __m128i tmp;
-    int i,j;
+    unsigned int i;
+    int j;
     //pointer to the CIPHERTEXT
     //pointer to the DECRYPTED TEXT buffer
     //text length in bytes
@@ -613,7 +615,8 @@ void encrypt_ram::AES_256_Key_Expansion (const unsigned char *userkey,const unsi
 void encrypt_ram::AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],
 unsigned long length,unsigned char *key,int number_of_rounds){
     __m128i feedback,data;
-    int i,j;
+    unsigned int i;
+    int j;
     if (length%16)
         length = length/16+1;
     else length /=16;
@@ -632,7 +635,8 @@ void encrypt_ram::AES_CBC_decrypt(const unsigned char *in,unsigned char *out,uns
 unsigned long length,unsigned char *key,int number_of_rounds)
 {
     __m128i data,feedback,last_in;
-    int i,j;
+    unsigned int i;
+    int j;
     if (length%16)
     length = length/16+1;
     else length /=16;
@@ -655,7 +659,8 @@ void encrypt_ram::AES_CTR_encrypt (const unsigned char *in,unsigned char *out,co
 const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds)
 {
     __m128i ctr_block, tmp, ONE, BSWAP_EPI64;
-    int i,j;
+    unsigned int i;
+    int j;
     if (length%16)
     length = length/16 + 1;
     else length/=16;
@@ -716,7 +721,7 @@ int encrypt_ram::AES_set_encrypt_key (const unsigned char *userKey,const int bit
 
 int encrypt_ram::AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key)
 {
-    int i,nr;;
+    int nr;
     AES_KEY temp_key;
     __m128i *Key_Schedule = (__m128i*)key->KEY;
     __m128i *Temp_Key_Schedule = (__m128i*)temp_key.KEY;
@@ -762,17 +767,17 @@ void encrypt_ram::getNewAESKey(int size){
         //std::cout << "#keys= "<<keys<<std::endl;
         std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
         resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
-        int keyPosition =0;
+        //int keyPosition =0;
         //note this is extremely format sensitive string manipulation..probably need to change for modularization
-        for (int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
+        for (unsigned int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
             char a = resultString[string_pos];
             char b = resultString[string_pos+1];
             int ai=0,bi=0;
             if (((a=='\n'))||(((a>=97 && a<=102)||(a>=48 && a<=57))&&((b>=97 && b<=102)||(b>=48 && b<=57)))){//97-102 == a-f 48-57 == 0-9
                 if (a=='\n'){
                     string_pos++;
-                    char a = resultString[string_pos];
-                    char b = resultString[string_pos+1];
+                    a = resultString[string_pos];
+                    b = resultString[string_pos+1];
                 }
                 ai = (a>57)?a-87:a-48;
                 bi = (b>57)?b-87:b-48;
@@ -807,7 +812,7 @@ void encrypt_ram::getNewAESKey(int size){
 
 unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for stoull call
     std::string str = input;
-    for(int i=0; i<str.length()&&str.length()!=0; i++)
+    for(unsigned int i=0; i<str.length()&&str.length()!=0; i++)
         if(str[i] == ' '){
             str.erase(i,1);
             i=0;
@@ -826,7 +831,7 @@ unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for s
 std::string encrypt_ram::call_curl(std::string address, std::string arguments){
     CURL *curl;
     CURLcode responseFromRequest;
-    std::string resultString;
+    std::string resultString="";
     //curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
@@ -841,13 +846,16 @@ std::string encrypt_ram::call_curl(std::string address, std::string arguments){
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, encrypt_ram::WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resultString);
         responseFromRequest = curl_easy_perform(curl);
-        if (responseFromRequest != CURLE_OK)
+        if (responseFromRequest != CURLE_OK){
             fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(responseFromRequest));
+            exit(1);
+        }
         // always cleanup 
         
         curl_easy_cleanup(curl);
-        return resultString;
+        
     }
+    return resultString;
 }
 
 bool encrypt_ram::anyKey(){
@@ -868,4 +876,8 @@ size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, voi
 {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
+}
+
+unsigned long long encrypt_ram::getNewLL(){
+    return encrypt_ram::string_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
 }

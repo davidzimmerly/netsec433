@@ -60,11 +60,11 @@ void encrypt_ram_rsa::encryptString(){
 	vector<long long int> k;
 	std::string x;
 	int y;
-	long long int test;
+	//long long int test;
 	BigInteger z;
 
 	// Encrypts string
-	for (int i = 0; i < name.size(); i++) {
+	for (uint i = 0; i < name.size(); i++) {
 		x = to_string((int)name.at(i));
 		y = (int)name.at(i);
 		z = BigInteger(x);
@@ -84,7 +84,7 @@ void encrypt_ram_rsa::decryptString(){
 	string s;
 
 	// Decrypts string
-	for (int i = 0; i < name.size(); i++) {
+	for (uint i = 0; i < name.size(); i++) {
 		z2 = BigInteger(fn.at(i));
 		y2 = fn.at(i);
 		for (int j = 1; j < d; j++) {

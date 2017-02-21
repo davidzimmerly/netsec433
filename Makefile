@@ -1,8 +1,8 @@
 CXX = g++
-CXXFILES = main.cpp encrypt_ram.cpp
+CXXFILES = main.cpp encrypt_ram.cpp encrypt_ram_rsa.cpp BigInteger.cpp
 
 CXXFLAGS = -std=gnu++11
-CPPFLAGS = -maes -msse4 
+CPPFLAGS = -g -maes -msse4 -Wall 
 LIBS = -lcurl
 
 all:

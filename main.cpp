@@ -57,7 +57,8 @@ int main()
         std::cout << "cannot find configuration file values in config.txt" <<std::endl;
         exit(1);
     }
-    unsigned long long* des_key = new unsigned long long;
+    file.close();
+    /*unsigned long long* des_key = new unsigned long long;
     *des_key = 1383827165325090801;
     encrypt_ram* er = new encrypt_ram(*des_key);
     //initial  memory search hex editor demo:
@@ -82,7 +83,7 @@ int main()
             done = anyKey();
         }
     }
-    */
+    
 
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
@@ -92,23 +93,21 @@ int main()
     er->desDecrypt(*testMessage);
     //std::cout <<"Test Message= "<< *testMessage << std::endl;
     
-    delete des_key;
-    
+    delete des_key;*/
     AES_KEY key;
     AES_KEY decrypt_key;
-    uint8_t *PLAINTEXT;
     uint8_t *CIPHERTEXT;
     uint8_t *DECRYPTEDTEXT;
     uint8_t *EXPECTED_CIPHERTEXT;
     uint8_t *CIPHER_KEY;
     int i,j;
     int key_length;
-    if (!er->Check_CPU_support_AES()){
+  /*  if (!er->Check_CPU_support_AES()){
         printf("Cpu does not support AES instruction set. Bailing out.\n");
         return 1;
-    }
+    }*/
 
-   delete er;
+//   delete er;
      
     //std::string resultString;
     //resultString = call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE");
@@ -131,36 +130,17 @@ int main()
 
     std::string plainTextNew = "jfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoapp89347hfjy8732y4ed7yruedfyf";
     
-    std::cout << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;
+    //std::cout << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[256];
 
-        
+    //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
     for (int j=0; j<plainTextNew.length(); j++){
-        char a = plainTextNew[j];
-        formattedNewPlainText[j] = (int)a;
-    }
-    for (int j=0; j<plainTextNew.length(); j++){
-        std:: cout << (char)formattedNewPlainText[j];
+        formattedNewPlainText[j] = plainTextNew[j];
     }
 
-
-
-    er2->print_m128i_with_string("",((__m128i*)formattedNewPlainText)[0]);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[1],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[2],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[3],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[4],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[5],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[6],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[7],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[8],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[9],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[10],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[11],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[12],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[13],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[14],16);
-    er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[15],16);
+    //for (int j=0; j<plainTextNew.length(); j++)
+      //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
+    
 
     //CTR MODE TEST:
     uint8_t *NONCE;
@@ -187,29 +167,19 @@ int main()
         NONCE = CTR256_NONCE;
         key_length = 256;
     #endif
-    PLAINTEXT = (uint8_t*)malloc(LENGTH);
+    //PLAINTEXT = (uint8_t*)malloc(LENGTH);
     CIPHERTEXT = (uint8_t*)malloc(LENGTH);
     DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
-    for(i=0 ;i<LENGTH/16/2; i++){
-        for(j=0; j<2; j++){
-            _mm_storeu_si128(&((__m128i*)PLAINTEXT)[i*2+j], ((__m128i*)formattedNewPlainText)[j]);
-        }
-    }
-    for(j=i*2 ; j<LENGTH/16; j++){
-        _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j], ((__m128i*)formattedNewPlainText)[j%4]);
-    }
-    if (LENGTH%16){
-        _mm_storeu_si128(&((__m128i*)PLAINTEXT)[j],((__m128i*)formattedNewPlainText)[j%4]);
-    }
+    
     er2->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
     er2->AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
     er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
     printf("%s\n",STR);
-    printf("The Cipher Key:\n");
+/*    printf("The Cipher Key:\n");
     er2->print_m128i_with_string("",((__m128i*)CIPHER_KEY)[0]);
     if (key_length > 128)
         er2->print_m128i_with_string_short("",((__m128i*)CIPHER_KEY)[1],(key_length/8) -16);
-/*    printf("The Key Schedule:\n");
+    printf("The Key Schedule:\n");
     for (i=0; i< key.nr; i++)
         er->print_m128i_with_string("",((__m128i*)key.KEY)[i]);
     printf("The PLAINTEXT:\n");
@@ -239,27 +209,13 @@ int main()
         }
     }
     printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
-    std::cout << plainTextNew << std::endl;
-    for (int j=0; j<plainTextNew.length(); j++){
-        std:: cout << (char)formattedNewPlainText[j];
-    }
-    std::cout<<std::endl;
-    
-    for (int j=0; j<plainTextNew.length(); j++){
-        std:: cout << (char)PLAINTEXT[j];
-    }
-    std::cout<<std::endl;
     std::string output;
     for (int j=0; j<plainTextNew.length(); j++){
-        //std::cout << (char)DECRYPTEDTEXT[j];
         output+=(char)DECRYPTEDTEXT[j];
     }
-    std::cout<<output<<std::endl;
-    if (output.compare("plainTextNew"))
+    if (output.compare(plainTextNew)==0)
         std::cout << "string is same as original" << std::endl;
 
-    delete testMessage;
-    delete er2;
 	
 	/*
 	// RSA - Because this takes an inordinate amount of time to run,
@@ -321,5 +277,9 @@ int main()
 	}
 	*/
 	
+    free(CIPHERTEXT);
+    free(DECRYPTEDTEXT);
+    delete[] formattedNewPlainText;
+    delete er2;
     return 0;
 }

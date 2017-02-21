@@ -11,7 +11,7 @@
 #endif
 #endif
 #ifndef LENGTH
-#define LENGTH 1024
+#define LENGTH 256
 #endif
 
 #include <cstdio>
@@ -45,7 +45,7 @@ class encrypt_ram{
         std::string key = "94307803947898";//for initial encryption method XOR
         void leftShift(unsigned int &input);
         unsigned int function_s(int table,int row, int column );
-        unsigned long long* K[16];
+        unsigned long long* K[17];
         void displayBinary(unsigned long long input);
         void displayBinary(unsigned int input);
         void displayBinaryX(unsigned int input,unsigned int bits);

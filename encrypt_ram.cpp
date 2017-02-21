@@ -38,13 +38,21 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
 
 encrypt_ram::encrypt_ram(){
     aesKeySize=0;
+    aesKey=NULL;
     curl_global_init(CURL_GLOBAL_DEFAULT);
+    for (int j=1; j<=16; j++){
+        K[j]=NULL;
+    }
 }
 
 encrypt_ram::encrypt_ram(unsigned long long & key){
 //begin init
     curl_global_init(CURL_GLOBAL_DEFAULT);
     aesKeySize=0;
+    aesKey=NULL;
+    for (int j=1; j<=16; j++){
+        K[j]=NULL;
+    }
     unsigned long long* permutation1;
     permutation1 = permuteKey(key);
     unsigned int C[17], D[17]; //16+1 for the initial split
@@ -73,11 +81,12 @@ encrypt_ram::encrypt_ram(unsigned long long & key){
 
 encrypt_ram::~encrypt_ram(){
     if (aesKey!=NULL)
-        delete aesKey;
-        
-    for (int x=1; x<16; x++){
-        delete K[x];
-    }
+        delete[] aesKey;
+    else    
+        for (int x=1; x<=16; x++){
+            if (K[x]!=NULL)
+                delete K[x];
+        }
 }
 
 void encrypt_ram::desEncrypt(unsigned long long & message){
@@ -747,14 +756,15 @@ void encrypt_ram::getNewAESKey(int size){
         keys=size/8;
         aesKeySize=size;
         if (aesKey!=NULL)
-            delete aesKey;
+            delete[] aesKey;
         aesKey = new ALIGN16 uint8_t[keys];
 
         //std::cout << "#keys= "<<keys<<std::endl;
         std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
         resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
         int keyPosition =0;
-        for (int string_pos=0; string_pos<keys*3; string_pos+=3){
+        //note this is extremely format sensitive string manipulation..probably need to change for modularization
+        for (int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
             char a = resultString[string_pos];
             char b = resultString[string_pos+1];
             int ai=0,bi=0;

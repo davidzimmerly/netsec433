@@ -1,10 +1,6 @@
 #include <string>
 #include <iostream>
 #include <cmath>
-//#define
-//#define
-//#define
-
 #ifndef AES192
 #ifndef AES258
 #define AES256//AES192//AES128 to test different key sizes AES
@@ -14,8 +10,6 @@
 #define LENGTH 256
 #endif
 
-#include <cstdio>
-#include <stdint.h>
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <emmintrin.h>
@@ -96,16 +90,18 @@ class encrypt_ram{
         const int p [32] = { 16,   7,  20,  21, 29,  12,  28,  17, 1,  15,  23,  26,5,  18,  31,  10, 2,   8,  24,  14, 32,  27,   3,   9, 19,  13,  30,   6, 22,  11,   4,  25,};
         const int ipInverse [64] = {40,     8,   48,    16,    56,   24,    64,   32,        39,     7,   47,    15,    55,   23,    63,   31,38,     6,   46,    14,    54,   22,    62,   30,37,     5,   45,    13,    53,   21,    61,   29,36,     4,   44,    12,    52,   20,    60,   28,35,     3,   43,    11,    51,   19,    59,   27,34,     2,   42,    10,    50,   18,    58,   26,33,     1,   41,     9,    49,   17,    57,   25};
         
-        int aesKeySize;
+        
     public:
-        ALIGN16 uint8_t* aesKey;
+        ALIGN16 uint8_t* aesKey128;
+        ALIGN16 uint8_t* aesKey192;
+        ALIGN16 uint8_t* aesKey256;
         int Check_CPU_support_AES();
         bool anyKey();
         static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
         std::string call_curl(std::string address, std::string arguments);
         unsigned long long string_to_ull(std::string input);
         unsigned long long getNewLL();
-        void getNewAESKey(int size);
+        void getNewAESKeys();
         void print_m128i_with_string(char const* string,__m128i data);
         encrypt_ram();
         encrypt_ram(unsigned long long & key);

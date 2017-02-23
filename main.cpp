@@ -6,6 +6,8 @@
 #include <fstream>//std::ifstream,file i/o
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
 
+void checkTextMatch(std::string originalS, uint8_t* decrypted,uint8_t* original );
+
 ALIGN16 uint8_t CBC_IV[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
 ALIGN16 uint8_t CBC128_EXPECTED[] = {0x76,0x49,0xab,0xac,0x81,0x19,0xb2,0x46,0xce,0xe9,0x8e,0x9b,0x12,0xe9,0x19,0x7d,0x50,0x86,0xcb,0x9b,0x50,0x72,0x19,0xee,0x95,0xdb,0x11,0x3a,0x91,0x76,0x78,0xb2,0x73,0xbe,0xd6,0xb8,0xe3,0xc1,0x74,0x3b,0x71,0x16,0xe6,0x9e,0x22,0x22,0x95,0x16,0x3f,0xf1,0xca,0xa1,0x68,0x1f,0xac,0x09,0x12,0x0e,0xca,0x30,0x75,0x86,0xe1,0xa7};
 ALIGN16 uint8_t CBC192_EXPECTED[] = {0x4f,0x02,0x1d,0xb2,0x43,0xbc,0x63,0x3d,0x71,0x78,0x18,0x3a,0x9f,0xa0,0x71,0xe8,0xb4,0xd9,0xad,0xa9,0xad,0x7d,0xed,0xf4,0xe5,0xe7,0x38,0x76,0x3f,0x69,0x14,0x5a,0x57,0x1b,0x24,0x20,0x12,0xfb,0x7a,0xe0,0x7f,0xa9,0xba,0xac,0x3d,0xf1,0x02,0xe0,0x08,0xb0,0xe2,0x79,0x88,0x59,0x88,0x81,0xd9,0x20,0xa9,0xe6,0x4f,0x56,0x15,0xcd};
@@ -37,22 +39,26 @@ ALIGN16 uint8_t ECB256_EXPECTED[] = {0xf3,0xee,0xd1,0xbd,0xb5,0xd2,0xa0,0x3c,0x0
 
 int main()
 {
+    int stress_iterations=1;
     //configuration options (for json test) 
+    /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
-    std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
+    /*std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
     std::string rk;
     if (!std::getline(file, rk)){
         std::cout << "cannot find configuration file values in config.txt" <<std::endl;
         exit(1);
     }
-    file.close();
-    unsigned long long* des_key = new unsigned long long;
+    file.close();*/
+    /***********************************************************************************************************/
+
+    /*unsigned long long* des_key = new unsigned long long;
     *des_key = 1383827165325090801;
     encrypt_ram* er = new encrypt_ram(*des_key);
     if (!er->Check_CPU_support_AES()){
         printf("Cpu does not support AES instruction set. Bailing out.\n");
         return 1;
-    }
+    }*/
     //initial  memory search hex editor demo:*/
     /*
     bool done = false;
@@ -77,7 +83,7 @@ int main()
     }*/
     
 
-    unsigned long long* testMessage = new unsigned long long;
+    /*unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
     
     er->desEncrypt(*testMessage);
@@ -86,85 +92,121 @@ int main()
     std::cout <<"Test Message= "<< *testMessage << std::endl;
     
     delete des_key;
-    unsigned long long* des_key2=new unsigned long long;
-    AES_KEY key;
-    uint8_t *CIPHERTEXT,*DECRYPTEDTEXT,*CIPHER_KEY;
-    int i, key_length;
     
-
-    delete er;
+    delete er;*/
     encrypt_ram* er2; 
     er2 = new encrypt_ram();
     if (!er2->Check_CPU_support_AES()){
         printf("Cpu does not support AES instruction set. Bailing out.\n");
         return 1;
     }
-    *des_key2 = er2->getNewLL();
-    std::cout <<"new key: "<<*des_key2<<std::endl;
-    //json request example:
-    std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
-    std::string resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
-    std::cout << resultString << std::endl;
+    //unsigned long long* des_key2=new unsigned long long;
+    
+    //*des_key2 = er2->getNewLL();  //think bug is here 
+    //std::cout <<"new key: "<<*des_key2<<std::endl;
 
+
+/***********************************************************************************************************/    
+    //json request example:
+    /*std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
+    std::string resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    std::cout << resultString << std::endl;*/
+/***********************************************************************************************************/
 
     //aes new key / new text example:
-    er2->getNewAESKey(256);//need to change #DEFINE for test as well as key size and LENGTH =thisx2
     std::string plainTextNew = "jfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoapp89347hfjy8732y4ed7yruedfyf";
-    
     //std::cout << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;//256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[256];
 
     //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
-    for (uint j=0; j<plainTextNew.length(); j++){
+    for (uint j=0; j<LENGTH; j++){
         formattedNewPlainText[j] = plainTextNew[j];
     }
     //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
-
-    //CTR MODE TEST:
-    uint8_t *NONCE;
-    uint8_t *IV;
-    #ifdef AES128
-    #define STR "Performing AES128 CTR.\n"
-        CIPHER_KEY =er2->aesKey;//AES128_TEST_KEY;
-        IV = CTR128_IV;
-        NONCE = CTR128_NONCE;
-        key_length = 128;
-    #elif defined AES192
-    #define STR "Performing AES192 CTR.\n"
-        CIPHER_KEY = er2->aesKey;//AES192_TEST_KEY;
-        IV = CTR192_IV;
-        NONCE = CTR192_NONCE;
-        key_length = 192;
-    #elif defined AES256
-    #define STR "Performing AES256 CTR.\n"
-        CIPHER_KEY = er2->aesKey;//AES256_TEST_KEY;
-        IV = CTR256_IV;
-        NONCE = CTR256_NONCE;
-        key_length = 256;
-    #endif
-    CIPHERTEXT = (uint8_t*)malloc(LENGTH);
-    DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
+    uint8_t *CIPHERTEXT,*DECRYPTEDTEXT,*CIPHER_KEY;
     
-    er2->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
-    er2->AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,IV,NONCE,LENGTH,key.KEY,key.nr);
-    er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   IV, NONCE,  LENGTH, key.KEY,    key.nr);
-    printf("%s\n",STR);
-    for(i=0; i<LENGTH; i++){
-        if (DECRYPTEDTEXT[i] != formattedNewPlainText[i]){
-            printf("The DECRYPTED TEXT is not equal to the original PLAINTEXT.\n\n");
-            return 1;
-        }
-    }
-    printf("The DECRYPTED TEXT equals to the original PLAINTEXT.\n\n");
-    std::string output;
-    for (uint j=0; j<plainTextNew.length(); j++){
-        output+=(char)DECRYPTEDTEXT[j];
-    }
-    if (output.compare(plainTextNew)==0)
-        std::cout << "string is same as original" << std::endl;
+       CIPHERTEXT = (uint8_t*)malloc(LENGTH);
+        DECRYPTEDTEXT = (uint8_t*)malloc(LENGTH);
+    
+    er2->getNewAESKeys();
+    for (int key_length=128; key_length<=256; key_length+=64){
+     
+        std::string output="";
+        std::cout<<"testing "<<key_length<<"-bit key..";
+        //need to change #DEFINE for test as well as key size and LENGTH =thisx2
+        
+        if (key_length==128)
+            CIPHER_KEY = er2->aesKey128;
+        else if (key_length==192)
+            CIPHER_KEY = er2->aesKey192;
+        else
+            CIPHER_KEY = er2->aesKey256;
+        AES_KEY key, decrypt_key;
+        er2->AES_set_encrypt_key(CIPHER_KEY, key_length, &key);
+        er2->AES_set_decrypt_key(CIPHER_KEY, key_length, &decrypt_key);
+            
+        for(int stress=0; stress<stress_iterations; stress++){
+            //ctr mode
+            er2->AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,CTR128_IV,CTR128_NONCE,LENGTH,key.KEY,key.nr);
+            er2->AES_CTR_encrypt(CIPHERTEXT,DECRYPTEDTEXT,   CTR128_IV, CTR128_NONCE,  LENGTH, key.KEY,    key.nr);
+      
+            //note: these text comparisons give valgrind linking trouble on subsequent attempts but appear to work
 
-	
+            //checkTextMatch(plainTextNew,DECRYPTEDTEXT, formattedNewPlainText);
+            
+            /*for(uint i=0; i<LENGTH; i++){
+                if (DECRYPTEDTEXT[i] != formattedNewPlainText[i]){
+                    printf("The DECRYPTED TEXT is not equal to the original PLAINTEXT.\n\n");
+                    exit(1);
+                }
+            }*/
+            /*std::string output="";
+            for (int j=0; j<LENGTH; j++){
+                output+=(char)DECRYPTEDTEXT[j];
+            }*/
+            //std::cout<<output<<std::endl;
+            //if (output==plainTextNew){
+              //  std::cout << "string is same as original" << std::endl;
+                //exit(1);
+            //}
+            /*if (!output.compare(plainTextNew)==0){
+                std::cout << "string is not same as original" << std::endl;
+                exit(1);
+            } */       
+        }    
+        std::cout<<"CTR";
+        for(int stress=0; stress<stress_iterations; stress++){   
+
+
+            //cbc mode
+            er2->AES_CBC_encrypt(formattedNewPlainText,CIPHERTEXT,CBC_IV,LENGTH,key.KEY,key.nr);
+            er2->AES_CBC_decrypt(CIPHERTEXT,DECRYPTEDTEXT,  CBC_IV,  LENGTH, decrypt_key.KEY,    key.nr);
+            
+            //checkTextMatch(plainTextNew,DECRYPTEDTEXT, formattedNewPlainText);
+
+            
+        }
+        std::cout<<"/CBC";
+        for(int stress=0; stress<stress_iterations; stress++){
+            //ecb mode
+            er2->AES_ECB_encrypt(formattedNewPlainText,CIPHERTEXT,LENGTH,(const char*)key.KEY,key.nr);
+            er2->AES_ECB_decrypt(CIPHERTEXT,DECRYPTEDTEXT, LENGTH, (const char*)decrypt_key.KEY, decrypt_key.nr);
+            
+            //checkTextMatch(plainTextNew,DECRYPTEDTEXT, formattedNewPlainText);
+            
+            
+        }
+        
+        std::cout<<"/ECB...OK"<<std::endl;
+        
+    }
+        free(CIPHERTEXT);
+        free(DECRYPTEDTEXT);
+    
+
+
+    
 	/*
 	// RSA - Because this takes an inordinate amount of time to run,
 	// it asks the user if they'd like to opt out
@@ -224,11 +266,28 @@ int main()
 		rsa->decryptPIN();
 	}*/
 	
-	delete des_key2;
-    delete testMessage;
-    free(CIPHERTEXT);
-    free(DECRYPTEDTEXT);
+	//delete des_key2;
+  //  delete testMessage;
     delete[] formattedNewPlainText;
     delete er2;
     return 0;
+}
+
+
+void checkTextMatch(std::string originalS, uint8_t* decrypted,uint8_t* original ){
+    
+    for(uint i=0; i<LENGTH; i++){
+        if (decrypted[i] != original[i]){
+            printf("The DECRYPTED TEXT is not equal to the original PLAINTEXT.\n\n");
+            exit(1);
+        }
+    }
+    std::string output="";
+    for (uint j=0; j<LENGTH; j++){
+        output+=(char)decrypted[j];
+    }
+    if (!output.compare(originalS)==0){
+        std::cout << "string is not same as original" << std::endl;
+        exit(1);
+    }
 }

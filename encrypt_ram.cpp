@@ -111,8 +111,8 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
     message =*finalPermutation;
     //sample output
     //displayBinary(*finalPermutation);
-    //std::cout << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
-    //std::cout << "this is decimal equivalent: " << *finalPermutation << std::dec<<std::endl;
+    //std::cerr << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
+    //std::cerr << "this is decimal equivalent: " << *finalPermutation << std::dec<<std::endl;
     //cleanup
     delete initialPermutation;
     delete finalPermutation;
@@ -228,30 +228,30 @@ unsigned int * encrypt_ram::permutePbit(unsigned int &message){
 
 void encrypt_ram::displayBinary(unsigned long long input){
     for (int x=63; x>=0; x--){
-        std::cout << checkBit(input,x);
+        std::cerr << checkBit(input,x);
         if (x%4==0)
-            std::cout<<" ";
+            std::cerr<<" ";
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
 }
 void encrypt_ram::displayBinary(unsigned int input){
     for (int x=31; x>=0; x--)
-        std::cout << checkBit(input,x);
-    std::cout << std::endl;
+        std::cerr << checkBit(input,x);
+    std::cerr << std::endl;
 }
 void encrypt_ram::displayBinaryX(unsigned int input,unsigned int bits){
     for (int x=bits-1; x>=0; x--){
-        std::cout << checkBit(input,x);
+        std::cerr << checkBit(input,x);
         if (x%6==0)
-            std::cout<<" ";
+            std::cerr<<" ";
     }
 
 }
 void encrypt_ram::displayBinaryX(unsigned long long input,unsigned int bits){
     for (int x=bits-1; x>=0; x--){
-        std::cout << checkBit(input,x);
+        std::cerr << checkBit(input,x);
         if (x%6==0)
-            std::cout<<" ";
+            std::cerr<<" ";
     }
 }
 
@@ -280,13 +280,13 @@ unsigned int encrypt_ram::function_s(int table,int row, int column ){
 }
 void encrypt_ram::displayBinary(unsigned short input){
     for (int x=15; x>=0; x--)
-        std::cout << checkBit(input,x);
-    std::cout << std::endl;
+        std::cerr << checkBit(input,x);
+    std::cerr << std::endl;
 }
 void encrypt_ram::displayBinary(unsigned long input){
     for (int x=15; x>=0; x--)
-        std::cout << checkBit(input,x);
-    std::cout << std::endl;
+        std::cerr << checkBit(input,x);
+    std::cerr << std::endl;
 }
 void encrypt_ram::bitwiseSplit(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits){
     //64 bit  => 32 x 2 version
@@ -734,7 +734,7 @@ void encrypt_ram::getNewAESKey(int size){
         }
         else 
         {
-            std::cout <<"Invalid Input "", exiting."<<std::endl;
+            std::cerr <<"Invalid Input "", exiting."<<std::endl;
             exit(1);
         }
         aesKey[string_pos/3] = ai*16 + bi;
@@ -798,7 +798,7 @@ std::string encrypt_ram::call_curl(std::string address, std::string arguments){
 }
 
 bool encrypt_ram::anyKey(){
-    std::cout << "Press any key + enter to continue...x/exit to exit" << std::endl;
+    std::cerr << "Press any key + enter to continue...x/exit to exit" << std::endl;
     std::string c;
     std::cin >> c;
     if (c=="x" || c=="exit"){

@@ -89,7 +89,10 @@ class encrypt_ram{
         const unsigned int s8 [64] = { 13,  2,   8,  4,   6, 15,  11,  1,  10,  9,   3, 14,   5,  0,  12,  7,        1, 15,  13,  8,  10,  3,   7, 4,  12,  5,   6, 11,   0, 14 ,  9, 2,        7, 11,   4,  1,   9, 12,  14,  2,   0,  6,  10, 13,  15,  3,   5,  8,        2,  1,  14,  7,   4, 10,   8, 13,  15, 12,   9,  0,   3,  5,   6, 11};
         const int p [32] = { 16,   7,  20,  21, 29,  12,  28,  17, 1,  15,  23,  26,5,  18,  31,  10, 2,   8,  24,  14, 32,  27,   3,   9, 19,  13,  30,   6, 22,  11,   4,  25,};
         const int ipInverse [64] = {40,     8,   48,    16,    56,   24,    64,   32,        39,     7,   47,    15,    55,   23,    63,   31,38,     6,   46,    14,    54,   22,    62,   30,37,     5,   45,    13,    53,   21,    61,   29,36,     4,   44,    12,    52,   20,    60,   28,35,     3,   43,    11,    51,   19,    59,   27,34,     2,   42,    10,    50,   18,    58,   26,33,     1,   41,     9,    49,   17,    57,   25};
-        
+        ALIGN16 uint8_t CBC_IV[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
+        ALIGN16 uint8_t CTR128_IV[8] = {0xC0,0x54,0x3B,0x59,0xDA,0x48,0xD9,0x0B};
+        ALIGN16 uint8_t CTR128_NONCE[4] = {0x00,0x6C,0xB6,0xDB};
+
         
     public:
         AES_KEY key, decrypt_key;
@@ -131,5 +134,9 @@ class encrypt_ram{
         int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
-        
+        ALIGN16 uint8_t* encrypt_AES(std::string &input, std::string mode, unsigned int length);
+        std::string* decrypt_AES(uint8_t* input, std::string mode, unsigned int length);
+        void checkStringMatch(std::string* string1, std::string* string2, std::string mode );
+ 
+
 };

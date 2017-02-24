@@ -32,15 +32,25 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
 }
 
 encrypt_ram::encrypt_ram(){
+    if (!Check_CPU_support_AES()){
+        printf("Cpu does not support AES instruction set. Bailing out.\n");
+        exit(1);
+    }
     aesKey=NULL;
     aesKeySize = 0;
     for (int j=0; j<=16; j++){
         K[j]=NULL;
     }
+    
+    
 }
 
 encrypt_ram::encrypt_ram(unsigned long long & key){
 //begin init
+    if (!Check_CPU_support_AES()){
+        printf("Cpu does not support AES instruction set. Bailing out.\n");
+        exit(1);
+    }
     aesKey=NULL;
     aesKeySize = 0;
     for (int j=0; j<=16; j++){
@@ -70,6 +80,7 @@ encrypt_ram::encrypt_ram(unsigned long long & key){
 }
 
 encrypt_ram::~encrypt_ram(){
+    
     if (aesKey!=NULL)
         delete[] aesKey;
     for (int x=1; x<=16; x++){
@@ -851,5 +862,78 @@ const unsigned char *key,int nr){
         _mm_storeu_si128(&((__m128i*)out)[i*4+1],feedback2);
         _mm_storeu_si128(&((__m128i*)out)[i*4+2],feedback3);
         _mm_storeu_si128(&((__m128i*)out)[i*4+3],feedback4);
+    }
+}
+
+
+ALIGN16 uint8_t* encrypt_ram::encrypt_AES(std::string &input, std::string mode, unsigned int length){
+    
+    //need to code support for length>256
+    ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[length];
+    ALIGN16 uint8_t* CIPHERTEXT = new ALIGN16 uint8_t[length];
+    
+    for (unsigned int j=0; j<length; j++){
+        formattedNewPlainText[j] = input[j];
+    }
+    if (mode=="CTR"){
+        AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
+
+    }
+    else if (mode=="CBC"){
+        AES_CBC_encrypt(formattedNewPlainText,CIPHERTEXT,CBC_IV,LENGTH,key.KEY,key.nr);
+       
+    }        
+    else if (mode=="ECB"){
+        AES_ECB_encrypt(formattedNewPlainText,CIPHERTEXT,LENGTH,(const char*)key.KEY,key.nr);
+
+    }
+    else{
+        std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
+        exit(1);
+    } 
+    
+    for (int x=0; x<256; x++)
+        formattedNewPlainText[x]=0;
+
+    delete[] formattedNewPlainText;
+    
+    return CIPHERTEXT;
+}
+std::string* encrypt_ram::decrypt_AES(uint8_t* input, std::string mode, unsigned int length){
+    
+    //need to code support for length>256
+    std::string* newPlainText = new std::string;
+    newPlainText->reserve(length);
+    
+    ALIGN16 uint8_t* DECRYPTEDTEXT = new ALIGN16 uint8_t[length];
+    
+        //for (int j=0; j<plainTextNew.length(); j++)
+      //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
+
+    if (mode=="CTR"){
+        AES_CTR_encrypt(input,DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
+    }
+    else if (mode=="CBC"){
+        AES_CBC_decrypt(input,DECRYPTEDTEXT,  CBC_IV,  length, decrypt_key.KEY, key.nr);
+    }        
+    else if (mode=="ECB"){
+        AES_ECB_decrypt(input,DECRYPTEDTEXT, length, (const char*)decrypt_key.KEY, decrypt_key.nr);
+    }
+    else{
+        std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
+        exit(1);
+    } 
+    
+    for (unsigned int x=0; x<length; x++)
+        newPlainText->push_back(DECRYPTEDTEXT[x]);
+    
+    delete[] DECRYPTEDTEXT;
+    return newPlainText;
+}
+
+void encrypt_ram::checkStringMatch(std::string* string1, std::string* string2, std::string mode ){
+    if (*string1!=*string2){
+        std::cerr<<"strings unequal in AES "<<mode<<" mode"<<std::endl;;
+        exit(1);
     }
 }

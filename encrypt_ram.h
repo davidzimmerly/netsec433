@@ -36,7 +36,7 @@ typedef struct KEY_SCHEDULE{
 class encrypt_ram{
     private:
 
-        std::string key = "94307803947898";//for initial encryption method XOR
+        //std::string key = "94307803947898";//for initial encryption method XOR
         void leftShift(unsigned int &input);
         unsigned int function_s(int table,int row, int column );
         unsigned long long* K[17];
@@ -92,22 +92,22 @@ class encrypt_ram{
         
         
     public:
-        ALIGN16 uint8_t* aesKey128;
-        ALIGN16 uint8_t* aesKey192;
-        ALIGN16 uint8_t* aesKey256;
+        AES_KEY key, decrypt_key;
+        ALIGN16 uint8_t* aesKey;
+        int aesKeySize;
         int Check_CPU_support_AES();
         bool anyKey();
         static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
         std::string call_curl(std::string address, std::string arguments);
         unsigned long long string_to_ull(std::string input);
         unsigned long long getNewLL();
-        void getNewAESKeys();
+        void getNewAESKey(int size);
         void print_m128i_with_string(char const* string,__m128i data);
         encrypt_ram();
         encrypt_ram(unsigned long long & key);
         ~encrypt_ram();
         void encrypt(std::string &message){
-            for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
+        //    for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
         }
         void decrypt(std::string &message){
            encrypt(message);
@@ -130,5 +130,6 @@ class encrypt_ram{
         void print_m128i_with_string_short(char* string,__m128i data,int length);
         int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
+        void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
         
 };

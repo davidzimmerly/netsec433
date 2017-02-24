@@ -32,9 +32,8 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
 }
 
 encrypt_ram::encrypt_ram(){
-    aesKey128=NULL;
-    aesKey192=NULL;
-    aesKey256=NULL;
+    aesKey=NULL;
+    aesKeySize = 0;
     for (int j=0; j<=16; j++){
         K[j]=NULL;
     }
@@ -42,9 +41,8 @@ encrypt_ram::encrypt_ram(){
 
 encrypt_ram::encrypt_ram(unsigned long long & key){
 //begin init
-    aesKey128=NULL;
-    aesKey192=NULL;
-    aesKey256=NULL;
+    aesKey=NULL;
+    aesKeySize = 0;
     for (int j=0; j<=16; j++){
         K[j]=NULL;
     }
@@ -72,13 +70,8 @@ encrypt_ram::encrypt_ram(unsigned long long & key){
 }
 
 encrypt_ram::~encrypt_ram(){
-    if (aesKey128!=NULL)
-        delete[] aesKey128;
-    if (aesKey192!=NULL)
-        delete[] aesKey192;
-    if (aesKey256!=NULL)
-        delete[] aesKey256;
-        
+    if (aesKey!=NULL)
+        delete[] aesKey;
     for (int x=1; x<=16; x++){
         if (K[x]!=NULL)
             delete K[x];
@@ -703,15 +696,15 @@ int encrypt_ram::AES_set_decrypt_key (const unsigned char *userKey,const int bit
     return 0;
 }
 
-void encrypt_ram::getNewAESKeys(){
+void encrypt_ram::getNewAESKey(int size){
     
     int keys=0;
     std::string resultString="";
-    int size=128;
     keys=size/8;
-    if (aesKey128!=NULL)
-        delete[] aesKey128;
-    aesKey128 = new ALIGN16 uint8_t[keys];
+    if (aesKey!=NULL)
+        delete[] aesKey;
+    
+    aesKey = new ALIGN16 uint8_t[keys];
     std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
     resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
     //note this is extremely format sensitive string manipulation..probably need to change for modularization
@@ -733,65 +726,12 @@ void encrypt_ram::getNewAESKeys(){
             std::cout <<"Invalid Input "", exiting."<<std::endl;
             exit(1);
         }
-        aesKey128[string_pos/3] = ai*16 + bi;
+        aesKey[string_pos/3] = ai*16 + bi;
     }
-    size=192;
-    keys=size/8;
-    if (aesKey192!=NULL)
-        delete[] aesKey192;
-    aesKey192 = new ALIGN16 uint8_t[keys];
-    address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
-    resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
-    //note this is extremely format sensitive string manipulation..probably need to change for modularization
-    for (unsigned int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
-        char a = resultString[string_pos];
-        char b = resultString[string_pos+1];
-        int ai=0,bi=0;
-        if (((a=='\n'))||(((a>=97 && a<=102)||(a>=48 && a<=57))&&((b>=97 && b<=102)||(b>=48 && b<=57)))){//97-102 == a-f 48-57 == 0-9
-            if (a=='\n'){
-                string_pos++;
-                a = resultString[string_pos];
-                b = resultString[string_pos+1];
-            }
-            ai = (a>57)?a-87:a-48;
-            bi = (b>57)?b-87:b-48;
-        }
-        else 
-        {
-            std::cout <<"Invalid Input "", exiting."<<std::endl;
-            exit(1);
-        }
-        aesKey192[string_pos/3] = ai*16 + bi;
-    }
-    size=256;
-    keys=size/8;
-    if (aesKey256!=NULL)
-        delete[] aesKey256;
-    aesKey256 = new ALIGN16 uint8_t[keys];
-    address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
-    resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
-    //note this is extremely format sensitive string manipulation..probably need to change for modularization
-    for (unsigned int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
-        char a = resultString[string_pos];
-        char b = resultString[string_pos+1];
-        int ai=0,bi=0;
-        if (((a=='\n'))||(((a>=97 && a<=102)||(a>=48 && a<=57))&&((b>=97 && b<=102)||(b>=48 && b<=57)))){//97-102 == a-f 48-57 == 0-9
-            if (a=='\n'){
-                string_pos++;
-                a = resultString[string_pos];
-                b = resultString[string_pos+1];
-            }
-            ai = (a>57)?a-87:a-48;
-            bi = (b>57)?b-87:b-48;
-        }
-        else 
-        {
-            std::cout <<"Invalid Input "", exiting."<<std::endl;
-            exit(1);
-        }
-        aesKey256[string_pos/3] = ai*16 + bi;
-    }
-
+    //uint8_t* CIPHER_KEY = aesKey
+    AES_set_encrypt_key(aesKey, size, &key);
+    AES_set_decrypt_key(aesKey, size, &decrypt_key);
+        
     //how to print key values > 128:
         //encrypt_ram::print_m128i_with_string("",((__m128i*)results)[0]);
         //if (keys > 128)
@@ -868,4 +808,48 @@ size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, voi
 
 unsigned long long encrypt_ram::getNewLL(){
     return encrypt_ram::string_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
+}
+
+void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],
+unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,
+const unsigned char *key,int nr){
+
+    __m128i feedback1,feedback2,feedback3,feedback4;
+    __m128i data1,data2,data3,data4;
+    unsigned int i;
+    int j;
+    feedback1=_mm_loadu_si128((__m128i*)ivec1);
+    feedback2=_mm_loadu_si128((__m128i*)ivec2);
+    feedback3=_mm_loadu_si128((__m128i*)ivec3);
+    feedback4=_mm_loadu_si128((__m128i*)ivec4);
+    for(i=0; i < length/16/4; i++){
+        data1 = _mm_loadu_si128 (&((__m128i*)in)[i*4+0]);
+        data2 = _mm_loadu_si128 (&((__m128i*)in)[i*4+1]);
+        data3 = _mm_loadu_si128 (&((__m128i*)in)[i*4+2]);
+        data4 = _mm_loadu_si128 (&((__m128i*)in)[i*4+3]);
+        feedback1 = _mm_xor_si128 (data1,feedback1);
+        feedback2 = _mm_xor_si128 (data2,feedback2);
+        feedback3 = _mm_xor_si128 (data3,feedback3);
+        feedback4 = _mm_xor_si128 (data4,feedback4);
+        feedback1 = _mm_xor_si128 (feedback1,((__m128i*)key)[0]);
+        feedback2 = _mm_xor_si128 (feedback2,((__m128i*)key)[0]);
+        feedback3 = _mm_xor_si128 (feedback3,((__m128i*)key)[0]);
+        feedback4 = _mm_xor_si128 (feedback4,((__m128i*)key)[0]);
+        for(j=1; j <nr;j++){
+            feedback1 = _mm_aesenc_si128 (feedback1,((__m128i*)key)[j]);
+            feedback2 = _mm_aesenc_si128 (feedback2,((__m128i*)key)[j]);
+            feedback3 = _mm_aesenc_si128 (feedback3,((__m128i*)key)[j]);
+            feedback4 = _mm_aesenc_si128 (feedback4,((__m128i*)key)[j]);
+        }
+        feedback1 = _mm_aesenclast_si128 (feedback1,((__m128i*)key)[j]);
+        feedback2 = _mm_aesenclast_si128 (feedback2,((__m128i*)key)[j]);
+        feedback3 = _mm_aesenclast_si128 (feedback3,((__m128i*)key)[j]);
+        feedback4 = _mm_aesenclast_si128 (feedback4,((__m128i*)key)[j]);
+
+
+        _mm_storeu_si128(&((__m128i*)out)[i*4+0],feedback1);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+1],feedback2);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+2],feedback3);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+3],feedback4);
+    }
 }

@@ -33,6 +33,13 @@ typedef struct KEY_SCHEDULE{
   unsigned int nr;
 }AES_KEY;
 
+typedef struct AES_BLOCK{
+    unsigned short size;
+    unsigned short padding;
+    ALIGN16 uint8_t* data;
+}aesBlock;
+
+
 class encrypt_ram{
     private:
 
@@ -138,5 +145,4 @@ class encrypt_ram{
         std::string* decrypt_AES(uint8_t* input, std::string mode, unsigned int length);
         void checkStringMatch(std::string* string1, std::string* string2, std::string mode );
  
-
 };

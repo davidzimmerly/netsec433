@@ -81,12 +81,15 @@ int main()
 /***********************************************************************************************************/
 
     //aes new key / new text example:
-    std::string plainTextNew = "jfifdoifudifodifi3ufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoappodijjjjjjjjfifdoifudifodifidufidofidoapp89347hfjy8732y4ed7yruedfyf";
+    std::string plainTextNew = "1";
     //std::cerr << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;//256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[LENGTH];
-
-    //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
     for (unsigned int j=0; j<LENGTH; j++){
+        formattedNewPlainText[j] = 0;
+    }
+    
+    //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
+    for (unsigned int j=0; j<plainTextNew.length(); j++){
         formattedNewPlainText[j] = plainTextNew[j];
     }
     //for (int j=0; j<plainTextNew.length(); j++)
@@ -103,7 +106,7 @@ int main()
         std::string mode = "CTR";
         CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
         output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(output, &plainTextNew,mode);
+        er2->checkStringMatch(&plainTextNew,output ,mode);
         delete output;
         
         
@@ -114,7 +117,7 @@ int main()
         std::string mode = "CBC";
         CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
         output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(output, &plainTextNew,mode);
+        er2->checkStringMatch(&plainTextNew, &plainTextNew,mode);
         delete output;
     }
     std::cerr<<"/CBC";
@@ -123,7 +126,7 @@ int main()
         delete[] CIPHERTEXT;
         CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
         output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(output, &plainTextNew,mode);
+        er2->checkStringMatch(&plainTextNew,output, mode);
         delete output;
     }
     

@@ -5,7 +5,7 @@
 int main()
 {
     int stress_iterations=1;
-    unsigned int key_length = 128;
+    unsigned int key_length = 256;
     //configuration options (for json test) 
     /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
@@ -78,9 +78,9 @@ int main()
 /***********************************************************************************************************/
 
     //aes new key / new text example:
-    unsigned char* plainTextNew= (unsigned char *)"tommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhahflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjha";
+    unsigned char* plainTextNew= (unsigned char *)"tommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
      //plainTextNew = &plainTextNew1.c_str()
-    unsigned int len = 520;//# characters in plainTextNew, must set input size for now?;
+    unsigned int len = 256;//# characters in plainTextNew, must set input size for now?;
     std::cerr << "plainTextNewsize: "<<len<< std::endl;//256
     unsigned int newSize=len;
     unsigned int total = len;

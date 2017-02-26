@@ -712,7 +712,10 @@ void encrypt_ram::getNewAESKey(int size){
     int keys=0;
     std::string resultString="";
     keys=size/8;
-    
+    if (!(size==128 || size==256)){
+        std::cerr<<"unsupported key size "<<size<<", exiting."<<std::endl;
+    }
+
     if (aesKey!=NULL)
         delete[] aesKey;
     aesKeySize = size;
@@ -759,7 +762,7 @@ unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for s
             i=0;
         }
     std::string::size_type sz = 0;   // alias of size_t
-    unsigned long long ll;
+    unsigned long long ll=0;
     while (!str.empty()){
         ll = std::stoull (str,&sz,0);
         str = str.substr(sz);
@@ -871,7 +874,6 @@ aesBlock* encrypt_ram::encrypt_AES(unsigned char * input, std::string mode, unsi
     
     //uint8_t inputLength=input.length();
     //uint8_t inputLengthDiff=length-inputLength;
-    //need to code support for length>256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[length];
     ALIGN16 uint8_t* CIPHERTEXT = new ALIGN16 uint8_t[length];
     aesBlock* returnMe = new aesBlock;

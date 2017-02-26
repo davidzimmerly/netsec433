@@ -5,7 +5,7 @@
 int main()
 {
     int stress_iterations=1;
-    unsigned int key_length = 256;
+    unsigned int key_length = 128;
     //configuration options (for json test) 
     /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
@@ -78,11 +78,23 @@ int main()
 /***********************************************************************************************************/
 
     //aes new key / new text example:
-    unsigned char* plainTextNew = (unsigned char *)"tommytdsa;filiordfuyoiyfd876978698437ommyto";
-    uint8_t len = sizeof(plainTextNew);
-    //std::cerr << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;//256
-    ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[key_length];
-    for (unsigned int j=0; j<key_length; j++){
+    unsigned char* plainTextNew= (unsigned char *)"tommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhahflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjha";
+     //plainTextNew = &plainTextNew1.c_str()
+    unsigned int len = 520;//# characters in plainTextNew, must set input size for now?;
+    std::cerr << "plainTextNewsize: "<<len<< std::endl;//256
+    unsigned int newSize=len;
+    unsigned int total = len;
+    newSize = key_length;
+    
+           
+        while (total>key_length){
+            newSize += key_length;
+            total -= key_length;
+        
+        }
+    std::cerr << "aes blocks to use: "<<newSize<< std::endl;//256
+    ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[newSize];
+    for (unsigned int j=0; j<newSize; j++){
         formattedNewPlainText[j] = 0;
     }
     
@@ -92,19 +104,14 @@ int main()
     }
     //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
-    //uint8_t *CIPHERTEXT,*DECRYPTEDTEXT;//,*CIPHER_KEY;
-    
-    //DECRYPTEDTEXT = new ALIGN16 uint8_t[key_length];//(uint8_t*)malloc(LENGTH);
-    
     er2->getNewAESKey(key_length);
-    
     std::cerr<<"testing "<<key_length<<"-bit key..";
     //need to change #DEFINE for test as well as key size and LENGTH =thisx2
     for(int stress=0; stress<stress_iterations; stress++){
         unsigned char* output;
         std::string mode = "CTR";
-        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,key_length);
-        output = er2->decrypt_AES(block1,mode,key_length);
+        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,newSize);
+        output = er2->decrypt_AES(block1,mode);
         er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
         delete[] block1->data;
@@ -114,8 +121,8 @@ int main()
     for(int stress=0; stress<stress_iterations; stress++){   
         unsigned char* output;
         std::string mode = "CBC";
-        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,key_length);
-        output = er2->decrypt_AES(block1,mode,key_length);
+        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,newSize);
+        output = er2->decrypt_AES(block1,mode);
         er2->checkStringMatch(plainTextNew,output,len);
         free(output);
         delete[] block1->data;
@@ -125,8 +132,8 @@ int main()
     for(int stress=0; stress<stress_iterations; stress++){
         unsigned char* output;
         std::string mode = "ECB";
-        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,key_length);
-        output = er2->decrypt_AES(block1,mode,key_length);
+        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,newSize);
+        output = er2->decrypt_AES(block1,mode);
         er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
         delete[] block1->data;
@@ -134,8 +141,6 @@ int main()
     }
     
     std::cerr<<"/ECB...OK"<<std::endl;
-    //delete[] CIPHERTEXT;
-    //delete[] DECRYPTEDTEXT;
     
     
 	/*

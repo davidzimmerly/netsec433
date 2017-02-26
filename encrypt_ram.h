@@ -91,7 +91,23 @@ class encrypt_ram{
         ALIGN16 uint8_t CBC_IV[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
         ALIGN16 uint8_t CTR128_IV[8] = {0xC0,0x54,0x3B,0x59,0xDA,0x48,0xD9,0x0B};
         ALIGN16 uint8_t CTR128_NONCE[4] = {0x00,0x6C,0xB6,0xDB};
-
+        void AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
+        void AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
+        void AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
+        void KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp3);
+        void AES_192_Key_Expansion (const unsigned char *userkey,unsigned char *key);
+        void KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2);
+        void KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3);
+        void AES_256_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
+        void AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
+        void AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
+        void AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],
+        const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds);
+        void print_m128i_with_string_short(char* string,__m128i data,int length);
+        int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
+        int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
+        void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
+  
         
     public:
         AES_KEY key, decrypt_key;
@@ -117,24 +133,8 @@ class encrypt_ram{
         void desEncrypt(unsigned long long & message);
         void desDecrypt(unsigned long long & message);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
-        void AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
-        void AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
-        void AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
-        void KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp3);
-        void AES_192_Key_Expansion (const unsigned char *userkey,unsigned char *key);
-        void KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2);
-        void KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3);
-        void AES_256_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
-        void AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
-        void AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
-        void AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],
-        const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds);
-        void print_m128i_with_string_short(char* string,__m128i data,int length);
-        int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
-        int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
-        void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
         aesBlock* encrypt_AES(unsigned char* input, std::string mode, unsigned int length);
-        unsigned char* decrypt_AES(aesBlock* input, std::string mode, unsigned int length);
+        unsigned char* decrypt_AES(aesBlock* input, std::string mode);
         void checkStringMatch(unsigned char* string1, unsigned char* string2, unsigned int length);
  
 };

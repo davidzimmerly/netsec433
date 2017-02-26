@@ -1,13 +1,11 @@
-#include <string>//std::string
-#include <iostream>//std::cerr, std::endl
 #include "encrypt_ram_rsa.h"
 #include "encrypt_ram.h"
-#include <fstream>//std::ifstream,file i/o
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
 
 int main()
 {
     int stress_iterations=1;
+    unsigned int key_length = 256;
     //configuration options (for json test) 
     /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
@@ -80,22 +78,24 @@ int main()
 /***********************************************************************************************************/
 
     //aes new key / new text example:
-    unsigned char* plainTextNew = (unsigned char *)"tommytommyto";
+    unsigned char* plainTextNew = (unsigned char *)"tommytdsa;filiordfuyoiyfd876978698437ommyto";
+    uint8_t len = sizeof(plainTextNew);
     //std::cerr << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;//256
-    ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[LENGTH];
-    for (unsigned int j=0; j<LENGTH; j++){
+    ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[key_length];
+    for (unsigned int j=0; j<key_length; j++){
         formattedNewPlainText[j] = 0;
     }
     
     //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
-    for (unsigned int j=0; j<sizeof(plainTextNew); j++){
+    for (unsigned int j=0; j<len; j++){
         formattedNewPlainText[j] = plainTextNew[j];
     }
     //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
     uint8_t *CIPHERTEXT,*DECRYPTEDTEXT;//,*CIPHER_KEY;
-    DECRYPTEDTEXT = new ALIGN16 uint8_t[LENGTH];//(uint8_t*)malloc(LENGTH);
-    int key_length = 256;
+    
+    DECRYPTEDTEXT = new ALIGN16 uint8_t[key_length];//(uint8_t*)malloc(LENGTH);
+    
     er2->getNewAESKey(key_length);
     
     std::cerr<<"testing "<<key_length<<"-bit key..";
@@ -103,9 +103,9 @@ int main()
     for(int stress=0; stress<stress_iterations; stress++){
         unsigned char* output;
         std::string mode = "CTR";
-        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
-        output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(plainTextNew,output,sizeof(plainTextNew)); 
+        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,key_length);
+        output = er2->decrypt_AES(CIPHERTEXT,mode,key_length);
+        er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
     }    
     std::cerr<<"CTR";
@@ -113,9 +113,9 @@ int main()
         unsigned char* output;
         delete[] CIPHERTEXT;
         std::string mode = "CBC";
-        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
-        output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(plainTextNew,output,sizeof(plainTextNew));
+        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,key_length);
+        output = er2->decrypt_AES(CIPHERTEXT,mode,key_length);
+        er2->checkStringMatch(plainTextNew,output,len);
         free(output);
     }
     std::cerr<<"/CBC";
@@ -123,9 +123,9 @@ int main()
         unsigned char* output;
         delete[] CIPHERTEXT;
         std::string mode = "ECB";
-        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
-        output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(plainTextNew,output,sizeof(plainTextNew)); 
+        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,key_length);
+        output = er2->decrypt_AES(CIPHERTEXT,mode,key_length);
+        er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
     }
     

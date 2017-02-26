@@ -1,20 +1,12 @@
 #include <string>
 #include <iostream>
 #include <cmath>
-#ifndef AES192
-#ifndef AES258
-#define AES256//AES192//AES128 to test different key sizes AES
-#endif
-#endif
-#ifndef LENGTH
-#define LENGTH 256
-#endif
 
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <emmintrin.h>
 #include <curl/curl.h>//for network access
-#include <string.h>//used for a strlen()call could probably remove
+#include <fstream>//std::ifstream,file i/o
 
 #if !defined (ALIGN16)
 # if defined (__GNUC__)

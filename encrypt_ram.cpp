@@ -779,7 +779,7 @@ std::string encrypt_ram::call_curl(std::string address, std::string arguments){
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         if (arguments!="NONE"){
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, arguments.c_str());
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(arguments.c_str()));
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, sizeof(arguments.c_str()));
 
         }
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, encrypt_ram::WriteCallback);

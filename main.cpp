@@ -2,7 +2,6 @@
 #include <iostream>//std::cerr, std::endl
 #include "encrypt_ram_rsa.h"
 #include "encrypt_ram.h"
-#include <stdlib.h>//for printf support (remove eventually when done with AES drivers)
 #include <fstream>//std::ifstream,file i/o
 //i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
 
@@ -81,7 +80,7 @@ int main()
 /***********************************************************************************************************/
 
     //aes new key / new text example:
-    std::string plainTextNew = "1";
+    unsigned char* plainTextNew = (unsigned char *)"tommytommyto";
     //std::cerr << "plainTextNewsize: "<<plainTextNew.length()<< std::endl;//256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[LENGTH];
     for (unsigned int j=0; j<LENGTH; j++){
@@ -89,7 +88,7 @@ int main()
     }
     
     //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
-    for (unsigned int j=0; j<plainTextNew.length(); j++){
+    for (unsigned int j=0; j<sizeof(plainTextNew); j++){
         formattedNewPlainText[j] = plainTextNew[j];
     }
     //for (int j=0; j<plainTextNew.length(); j++)
@@ -98,46 +97,42 @@ int main()
     DECRYPTEDTEXT = new ALIGN16 uint8_t[LENGTH];//(uint8_t*)malloc(LENGTH);
     int key_length = 256;
     er2->getNewAESKey(key_length);
- 
-    std::string* output;
+    
     std::cerr<<"testing "<<key_length<<"-bit key..";
     //need to change #DEFINE for test as well as key size and LENGTH =thisx2
     for(int stress=0; stress<stress_iterations; stress++){
+        unsigned char* output;
         std::string mode = "CTR";
         CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
         output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(&plainTextNew,output ,mode);
-        delete output;
-        
-        
+        er2->checkStringMatch(plainTextNew,output,sizeof(plainTextNew)); 
+        free(output);
     }    
     std::cerr<<"CTR";
     for(int stress=0; stress<stress_iterations; stress++){   
+        unsigned char* output;
         delete[] CIPHERTEXT;
         std::string mode = "CBC";
         CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
         output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(&plainTextNew, &plainTextNew,mode);
-        delete output;
+        er2->checkStringMatch(plainTextNew,output,sizeof(plainTextNew));
+        free(output);
     }
     std::cerr<<"/CBC";
     for(int stress=0; stress<stress_iterations; stress++){
-        std::string mode = "ECB";
+        unsigned char* output;
         delete[] CIPHERTEXT;
+        std::string mode = "ECB";
         CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,LENGTH);
         output = er2->decrypt_AES(CIPHERTEXT,mode,LENGTH);
-        er2->checkStringMatch(&plainTextNew,output, mode);
-        delete output;
+        er2->checkStringMatch(plainTextNew,output,sizeof(plainTextNew)); 
+        free(output);
     }
     
     std::cerr<<"/ECB...OK"<<std::endl;
-        
-    
     delete[] CIPHERTEXT;
     delete[] DECRYPTEDTEXT;
     
-
-
     
 	/*
 	// RSA - Because this takes an inordinate amount of time to run,
@@ -199,7 +194,7 @@ int main()
 	}*/
 	
 	//delete des_key2;
-  //  delete testMessage;
+    //delete testMessage;
     delete[] formattedNewPlainText;
     delete er2;
     return 0;

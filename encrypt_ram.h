@@ -141,8 +141,8 @@ class encrypt_ram{
         int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
-        ALIGN16 uint8_t* encrypt_AES(std::string &input, std::string mode, unsigned int length);
-        std::string* decrypt_AES(uint8_t* input, std::string mode, unsigned int length);
-        void checkStringMatch(std::string* string1, std::string* string2, std::string mode );
+        ALIGN16 uint8_t* encrypt_AES(unsigned char* input, std::string mode, unsigned int length);
+        unsigned char* decrypt_AES(uint8_t* input, std::string mode, unsigned int length);
+        void checkStringMatch(unsigned char* string1, unsigned char* string2, unsigned int length);
  
 };

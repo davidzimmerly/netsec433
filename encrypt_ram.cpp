@@ -866,30 +866,31 @@ const unsigned char *key,int nr){
 }
 
 
-ALIGN16 uint8_t* encrypt_ram::encrypt_AES(std::string &input, std::string mode, unsigned int length){
+ALIGN16 uint8_t* encrypt_ram::encrypt_AES(unsigned char * input, std::string mode, unsigned int length){
     
-    uint8_t inputLength=input.length();
-    uint8_t inputLengthDiff=length-inputLength;
+    //uint8_t inputLength=input.length();
+    //uint8_t inputLengthDiff=length-inputLength;
     //need to code support for length>256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[length];
     ALIGN16 uint8_t* CIPHERTEXT = new ALIGN16 uint8_t[length];
     
     for (unsigned int j=0; j<length; j++){
-        if (inputLengthDiff>=0 || j<inputLength)
+        //if (inputLengthDiff>=0 || j<inputLength)
             formattedNewPlainText[j] = input[j];
-        else
-            formattedNewPlainText[j]=0;
+        //else
+          //  formattedNewPlainText[j]=0;
+        //CIPHERTEXT[j]=0;
     }
     if (mode=="CTR"){
         AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
 
     }
     else if (mode=="CBC"){
-        AES_CBC_encrypt(formattedNewPlainText,CIPHERTEXT,CBC_IV,LENGTH,key.KEY,key.nr);
+        AES_CBC_encrypt(formattedNewPlainText,CIPHERTEXT,CBC_IV,length,key.KEY,key.nr);
        
     }        
     else if (mode=="ECB"){
-        AES_ECB_encrypt(formattedNewPlainText,CIPHERTEXT,LENGTH,(const char*)key.KEY,key.nr);
+        AES_ECB_encrypt(formattedNewPlainText,CIPHERTEXT,length,(const char*)key.KEY,key.nr);
 
     }
     else{
@@ -904,13 +905,10 @@ ALIGN16 uint8_t* encrypt_ram::encrypt_AES(std::string &input, std::string mode, 
     
     return CIPHERTEXT;
 }
-std::string* encrypt_ram::decrypt_AES(uint8_t* input, std::string mode, unsigned int length){
+unsigned char* encrypt_ram::decrypt_AES(uint8_t* input, std::string mode, unsigned int length){
     
     //need to code support for length>256
-    std::string* newPlainText = new std::string;
-    
-    ALIGN16 uint8_t* DECRYPTEDTEXT = new ALIGN16 uint8_t[length];
-    
+    unsigned char* DECRYPTEDTEXT = (unsigned char *)malloc(sizeof(char)*length);
         //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
 
@@ -928,17 +926,13 @@ std::string* encrypt_ram::decrypt_AES(uint8_t* input, std::string mode, unsigned
         exit(1);
     } 
     
-    for (unsigned int x=0; x<length; x++)
-        newPlainText->push_back(DECRYPTEDTEXT[x]);
-    
-    delete[] DECRYPTEDTEXT;
-    return newPlainText;
+    return DECRYPTEDTEXT;
 }
 
-void encrypt_ram::checkStringMatch(std::string* string1, std::string* string2, std::string mode ){
-    for (unsigned int x=0; x<string1->length(); x++){
-        if (string1->c_str()[x] != string2->c_str()[x]){
-            std::cerr<<"strings unequal in AES "<<mode<<" mode"<<std::endl;;
+void encrypt_ram::checkStringMatch(unsigned char* string1, unsigned char* string2, unsigned int length){
+    for (unsigned int x=0; x<length; x++){
+        if (string1[x] != string2[x]){
+            std::cerr<<"strings unequal in AES <<mode<< mode"<<std::endl;;
             exit(1);
         }
     }

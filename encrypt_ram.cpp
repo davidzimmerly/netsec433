@@ -866,14 +866,15 @@ const unsigned char *key,int nr){
 }
 
 
-ALIGN16 uint8_t* encrypt_ram::encrypt_AES(unsigned char * input, std::string mode, unsigned int length){
+aesBlock* encrypt_ram::encrypt_AES(unsigned char * input, std::string mode, unsigned int length){
     
     //uint8_t inputLength=input.length();
     //uint8_t inputLengthDiff=length-inputLength;
     //need to code support for length>256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[length];
     ALIGN16 uint8_t* CIPHERTEXT = new ALIGN16 uint8_t[length];
-    
+    aesBlock* returnMe = new aesBlock;
+    returnMe->size = length;
     for (unsigned int j=0; j<length; j++){
         //if (inputLengthDiff>=0 || j<inputLength)
             formattedNewPlainText[j] = input[j];
@@ -903,9 +904,10 @@ ALIGN16 uint8_t* encrypt_ram::encrypt_AES(unsigned char * input, std::string mod
 
     delete[] formattedNewPlainText;
     
-    return CIPHERTEXT;
+    returnMe->data=CIPHERTEXT;
+    return returnMe;
 }
-unsigned char* encrypt_ram::decrypt_AES(uint8_t* input, std::string mode, unsigned int length){
+unsigned char* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode, unsigned int length){
     
     //need to code support for length>256
     unsigned char* DECRYPTEDTEXT = (unsigned char *)malloc(sizeof(char)*length);
@@ -913,13 +915,13 @@ unsigned char* encrypt_ram::decrypt_AES(uint8_t* input, std::string mode, unsign
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
 
     if (mode=="CTR"){
-        AES_CTR_encrypt(input,DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
+        AES_CTR_encrypt(input->data,DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
     }
     else if (mode=="CBC"){
-        AES_CBC_decrypt(input,DECRYPTEDTEXT,  CBC_IV,  length, decrypt_key.KEY, key.nr);
+        AES_CBC_decrypt(input->data,DECRYPTEDTEXT,  CBC_IV,  length, decrypt_key.KEY, key.nr);
     }        
     else if (mode=="ECB"){
-        AES_ECB_decrypt(input,DECRYPTEDTEXT, length, (const char*)decrypt_key.KEY, decrypt_key.nr);
+        AES_ECB_decrypt(input->data,DECRYPTEDTEXT, length, (const char*)decrypt_key.KEY, decrypt_key.nr);
     }
     else{
         std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;

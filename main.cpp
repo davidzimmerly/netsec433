@@ -92,9 +92,9 @@ int main()
     }
     //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
-    uint8_t *CIPHERTEXT,*DECRYPTEDTEXT;//,*CIPHER_KEY;
+    //uint8_t *CIPHERTEXT,*DECRYPTEDTEXT;//,*CIPHER_KEY;
     
-    DECRYPTEDTEXT = new ALIGN16 uint8_t[key_length];//(uint8_t*)malloc(LENGTH);
+    //DECRYPTEDTEXT = new ALIGN16 uint8_t[key_length];//(uint8_t*)malloc(LENGTH);
     
     er2->getNewAESKey(key_length);
     
@@ -103,35 +103,39 @@ int main()
     for(int stress=0; stress<stress_iterations; stress++){
         unsigned char* output;
         std::string mode = "CTR";
-        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,key_length);
-        output = er2->decrypt_AES(CIPHERTEXT,mode,key_length);
+        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,key_length);
+        output = er2->decrypt_AES(block1,mode,key_length);
         er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
+        delete[] block1->data;
+        delete block1;
     }    
     std::cerr<<"CTR";
     for(int stress=0; stress<stress_iterations; stress++){   
         unsigned char* output;
-        delete[] CIPHERTEXT;
         std::string mode = "CBC";
-        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,key_length);
-        output = er2->decrypt_AES(CIPHERTEXT,mode,key_length);
+        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,key_length);
+        output = er2->decrypt_AES(block1,mode,key_length);
         er2->checkStringMatch(plainTextNew,output,len);
         free(output);
+        delete[] block1->data;
+        delete block1;
     }
     std::cerr<<"/CBC";
     for(int stress=0; stress<stress_iterations; stress++){
         unsigned char* output;
-        delete[] CIPHERTEXT;
         std::string mode = "ECB";
-        CIPHERTEXT = er2->encrypt_AES(plainTextNew,mode,key_length);
-        output = er2->decrypt_AES(CIPHERTEXT,mode,key_length);
+        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,key_length);
+        output = er2->decrypt_AES(block1,mode,key_length);
         er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
+        delete[] block1->data;
+        delete block1;
     }
     
     std::cerr<<"/ECB...OK"<<std::endl;
-    delete[] CIPHERTEXT;
-    delete[] DECRYPTEDTEXT;
+    //delete[] CIPHERTEXT;
+    //delete[] DECRYPTEDTEXT;
     
     
 	/*

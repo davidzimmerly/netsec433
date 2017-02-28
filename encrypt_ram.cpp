@@ -870,20 +870,43 @@ const unsigned char *key,int nr){
 }
 
 
-aesBlock* encrypt_ram::encrypt_AES(const char * input, std::string mode, unsigned int length){
+aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
+    //length here is padded size of block to encode, len is actual unpadded size of string input
+    unsigned int len = input.length();//# characters in plainTextNew, must set input size for now?;
+    unsigned int length=aesKeySize;
+    int total = len;
     
-    //uint8_t inputLength=input.length();
-    //uint8_t inputLengthDiff=length-inputLength;
+       
+    while (total>aesKeySize){
+        length += aesKeySize;
+        total -= aesKeySize;
+    
+    }
+
+    char plainTextNew[length];
+    for (unsigned int u=0; u<length;u++){
+        plainTextNew[u]=0;
+    }
+
+    input.copy(plainTextNew,input.length(),0);
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[length];
+    for (unsigned int j=0; j<length; j++){
+        formattedNewPlainText[j] = 0;
+    }
+    
+    //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
+    for (unsigned int j=0; j<len; j++){
+        formattedNewPlainText[j] = input[j];
+    }
     ALIGN16 uint8_t* CIPHERTEXT = new ALIGN16 uint8_t[length];
+    for (unsigned int j=0; j<length; j++){
+        CIPHERTEXT[j] = 0;
+    }
+    
     aesBlock* returnMe = new aesBlock;
     returnMe->size = length;
-    for (unsigned int j=0; j<length; j++){
-        //if (inputLengthDiff>=0 || j<inputLength)
-            formattedNewPlainText[j] = input[j];
-        //else
-          //  formattedNewPlainText[j]=0;
-        //CIPHERTEXT[j]=0;
+    for (unsigned int j=0; j<len; j++){
+        formattedNewPlainText[j] = input[j];
     }
     if (mode=="CTR"){
         AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
@@ -910,13 +933,10 @@ aesBlock* encrypt_ram::encrypt_AES(const char * input, std::string mode, unsigne
     returnMe->data=CIPHERTEXT;
     return returnMe;
 }
- char* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
+std::string* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
     
-    //need to code support for length>256
      char* DECRYPTEDTEXT = ( char *)malloc(sizeof(char)*input->size);
-        //for (int j=0; j<plainTextNew.length(); j++)
-      //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
-
+    
     if (mode=="CTR"){
         AES_CTR_encrypt(input->data,( unsigned char *)DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,input->size,key.KEY,key.nr);
     }
@@ -930,18 +950,16 @@ aesBlock* encrypt_ram::encrypt_AES(const char * input, std::string mode, unsigne
         std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
         exit(1);
     } 
-    
-    return DECRYPTEDTEXT;
+    std::string* output = new std::string(DECRYPTEDTEXT);
+    free(DECRYPTEDTEXT);
+    return output;
 }
 
-void encrypt_ram::checkStringMatch( char* string1,  char* string2, unsigned int length){
-    for (unsigned int x=0; x<length; x++){
-        if (string2[x] != string1[x]){
-            //std::cerr<<string1<<std::endl;
-            //std::cerr<<string2<<std::endl;
+void encrypt_ram::checkStringMatch( std::string* string1,  std::string* string2){
+    //for (unsigned int x=0; x<string1.length(); x++){
+        if (*string2 != *string1){
             std::cerr<<"strings unequal in AES <<mode<< mode"<<std::endl;
             exit(1);
         }
-    }
+    //}
 }
-

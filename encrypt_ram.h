@@ -132,8 +132,8 @@ class encrypt_ram{
         void desEncrypt(unsigned long long & message);
         void desDecrypt(unsigned long long & message);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
-        aesBlock* encrypt_AES(const  char* input, std::string mode, unsigned int length);
-         char* decrypt_AES(aesBlock* input, std::string mode);
-        void checkStringMatch(char* string1,  char* string2, unsigned int length);
+        aesBlock* encrypt_AES(std::string &input, std::string mode);
+        std::string* decrypt_AES(aesBlock* input, std::string mode);
+        void checkStringMatch(std::string* string1,  std::string* string2);
  
 };

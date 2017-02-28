@@ -137,7 +137,7 @@ int main()
         std::string mode = "CBC";
         aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
         output = er2->decrypt_AES(block1,mode);
-        er2->checkStringMatch(plainTextNew,output,len);//6 errors len-6 fixes, but truncates string..
+        er2->checkStringMatch(plainTextNew,output,len);
         free(output);
         delete[] block1->data;
         delete block1;
@@ -148,7 +148,7 @@ int main()
         std::string mode = "ECB";
         aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
         output = ( char *)er2->decrypt_AES(block1,mode);
-        er2->checkStringMatch(plainTextNew,output,len); //6errors
+        er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
         delete[] block1->data;
         delete block1;

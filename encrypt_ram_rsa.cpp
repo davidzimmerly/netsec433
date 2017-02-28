@@ -62,12 +62,10 @@ void encrypt_ram_rsa::encryptString(){
 	vector<long long int> k;
 	std::string x;
 	int y;
-	long long int test;
 	BigInteger z;
-
 	
 	// Encrypts string
-	for (int i = 0; i < name.size(); i++) {
+	for (uint i = 0; i < name.size(); i++) {
 		x = to_string((int)name.at(i));
 		y = (int)name.at(i);
 		z = BigInteger(x);
@@ -88,7 +86,7 @@ void encrypt_ram_rsa::decryptString(){
 	string s;
 
 	// Decrypts string
-	for (int i = 0; i < name.size(); i++) {
+	for (uint i = 0; i < name.size(); i++) {
 		z2 = BigInteger(fn.at(i));
 		y2 = fn.at(i);
 		for (int j = 1; j < d; j++) {
@@ -113,28 +111,28 @@ void encrypt_ram_rsa::encryptPIN(){
 	encrypted_pin = BigInteger(pin_temp % n);
 	*/
 	
-	BigInteger result = 1;
+	long long int result = 1;
 	long long int exponent = e;
 	
 	while (exponent > 0){
 		if (exponent % 2 == 1){
-			result = (result * pin_temp) % n;
+			result = (result * pin) % n;
 		}
 		exponent = exponent >> 1;
-		pin_temp = (pin_temp * pin_temp) % n;
+		pin = (pin * pin) % n;
 	}
 	
 	encrypted_pin = result;
+	enc_p = result;
 	
-
-	
-	std::cerr << "Public Key PIN: " << pin_temp.getNumber() << std::endl;
-	std::cerr << "Encrypted PIN: " << encrypted_pin.getNumber() << std::endl;
+	//std::cerr << "Public Key PIN: " << pin_temp.getNumber() << std::endl;
+	//std::cerr << "Encrypted PIN: " << encrypted_pin.getNumber() << std::endl;
+	std::cerr << "Encrypted PIN: " << result << std::endl;
 }
 
 void encrypt_ram_rsa::decryptPIN(){
 	decrypted_pin = BigInteger(encrypted_pin);
-	dec_mult_pin = BigInteger(encrypted_pin);
+	//dec_mult_pin = BigInteger(encrypted_pin);
 	
 	/*
 	// Decrypts Int
@@ -145,21 +143,19 @@ void encrypt_ram_rsa::decryptPIN(){
 	decrypted_pin %= n;
 	*/
 	
-	
-	BigInteger result = 1;
+	long long int result = 1;
 	long long int exponent = d;
+	long long int dec_mult = enc_p;
 	
 	while (exponent > 0){
 		if (exponent % 2 == 1){
-			result = (result * dec_mult_pin) % n;
+			result = (result * dec_mult) % n;
 		}
 		exponent = exponent >> 1;
-		dec_mult_pin = (dec_mult_pin * dec_mult_pin) % n;
+		dec_mult = (dec_mult * dec_mult) % n;
 	}
 	
 	decrypted_pin = result;
-	
 
-	std::cerr << "Decrypted PIN: " << decrypted_pin.getNumber() << std::endl;
-
+	std::cerr << "Decrypted PIN: " << result << std::endl;
 }

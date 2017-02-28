@@ -870,7 +870,7 @@ const unsigned char *key,int nr){
 }
 
 
-aesBlock* encrypt_ram::encrypt_AES(unsigned char * input, std::string mode, unsigned int length){
+aesBlock* encrypt_ram::encrypt_AES(const char * input, std::string mode, unsigned int length){
     
     //uint8_t inputLength=input.length();
     //uint8_t inputLengthDiff=length-inputLength;
@@ -910,21 +910,21 @@ aesBlock* encrypt_ram::encrypt_AES(unsigned char * input, std::string mode, unsi
     returnMe->data=CIPHERTEXT;
     return returnMe;
 }
-unsigned char* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
+ char* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
     
     //need to code support for length>256
-    unsigned char* DECRYPTEDTEXT = (unsigned char *)malloc(sizeof(char)*input->size);
+     char* DECRYPTEDTEXT = ( char *)malloc(sizeof(char)*input->size);
         //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
 
     if (mode=="CTR"){
-        AES_CTR_encrypt(input->data,DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,input->size,key.KEY,key.nr);
+        AES_CTR_encrypt(input->data,( unsigned char *)DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,input->size,key.KEY,key.nr);
     }
     else if (mode=="CBC"){
-        AES_CBC_decrypt(input->data,DECRYPTEDTEXT,  CBC_IV,  input->size, decrypt_key.KEY, key.nr);
+        AES_CBC_decrypt(input->data,( unsigned char *)DECRYPTEDTEXT,  CBC_IV,  input->size, decrypt_key.KEY, key.nr);
     }        
     else if (mode=="ECB"){
-        AES_ECB_decrypt(input->data,DECRYPTEDTEXT, input->size, (const char*)decrypt_key.KEY, decrypt_key.nr);
+        AES_ECB_decrypt(input->data,( unsigned char *)DECRYPTEDTEXT, input->size, (const char*)decrypt_key.KEY, decrypt_key.nr);
     }
     else{
         std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
@@ -934,7 +934,7 @@ unsigned char* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
     return DECRYPTEDTEXT;
 }
 
-void encrypt_ram::checkStringMatch(unsigned char* string1, unsigned char* string2, unsigned int length){
+void encrypt_ram::checkStringMatch( char* string1,  char* string2, unsigned int length){
     for (unsigned int x=0; x<length; x++){
         if (string2[x] != string1[x]){
             //std::cerr<<string1<<std::endl;

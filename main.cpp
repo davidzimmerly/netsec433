@@ -78,20 +78,31 @@ int main()
 /***********************************************************************************************************/
 
     //aes new key / new text example:
-    unsigned char* plainTextNew= (unsigned char *)"tommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
-     //plainTextNew = &plainTextNew1.c_str()
-    unsigned int len = 256;//# characters in plainTextNew, must set input size for now?;
-    std::cerr << "plainTextNewsize: "<<len<< std::endl;//256
+    
+    // i want to use this string or version of it instead of the initialized char* below
+    std::string plainTextNew1=   "837648asdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahasdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
+    unsigned int len = plainTextNew1.length();//# characters in plainTextNew, must set input size for now?;
+    
+    
+    //this decides the amount of space necessary in current block size for plaintext
     unsigned int newSize=len;
     unsigned int total = len;
     newSize = key_length;
+    while (total>key_length){
+        newSize += key_length;
+        total -= key_length;
     
-           
-        while (total>key_length){
-            newSize += key_length;
-            total -= key_length;
-        
-        }
+    }
+    
+    //const unsigned char * plainTextNew = reinterpret_cast<const unsigned char *> (plainTextNew1.c_str());//errors
+    char plainTextNew[newSize];
+    std::size_t length = plainTextNew1.copy(plainTextNew,plainTextNew1.length(),0);
+    std::cerr << "plainTextNewsize: "<<length<< std::endl;//256
+    for (unsigned int u=0; u<newSize;u++){
+        plainTextNew[u]=0;
+    }
+
+
     std::cerr << "aes blocks to use: "<<newSize<< std::endl;//256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[newSize];
     for (unsigned int j=0; j<newSize; j++){
@@ -100,7 +111,7 @@ int main()
     
     //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
     for (unsigned int j=0; j<len; j++){
-        formattedNewPlainText[j] = plainTextNew[j];
+        formattedNewPlainText[j] = plainTextNew1[j];
     }
     //for (int j=0; j<plainTextNew.length(); j++)
       //  er2->print_m128i_with_string_short("",((__m128i*)formattedNewPlainText)[j],16);
@@ -108,10 +119,10 @@ int main()
     std::cerr<<"testing "<<key_length<<"-bit key..";
     //need to change #DEFINE for test as well as key size and LENGTH =thisx2
     for(int stress=0; stress<stress_iterations; stress++){
-        unsigned char* output;
+        char* output;
         std::string mode = "CTR";
-        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,newSize);
-        output = er2->decrypt_AES(block1,mode);
+        aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
+        output = ( char *)er2->decrypt_AES(block1,mode);
         er2->checkStringMatch(plainTextNew,output,len); 
         free(output);
         delete[] block1->data;
@@ -119,22 +130,26 @@ int main()
     }    
     std::cerr<<"CTR";
     for(int stress=0; stress<stress_iterations; stress++){   
-        unsigned char* output;
+         char* output;
         std::string mode = "CBC";
-        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,newSize);
+        aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
         output = er2->decrypt_AES(block1,mode);
         er2->checkStringMatch(plainTextNew,output,len);
+        for (unsigned int y=0; y<length; y++){
+            std::cerr<<output[y];
+        }
+        std::cerr<<std::endl;
         free(output);
         delete[] block1->data;
         delete block1;
     }
     std::cerr<<"/CBC";
     for(int stress=0; stress<stress_iterations; stress++){
-        unsigned char* output;
+         char* output;
         std::string mode = "ECB";
-        aesBlock* block1 = er2->encrypt_AES(plainTextNew,mode,newSize);
-        output = er2->decrypt_AES(block1,mode);
-        er2->checkStringMatch(plainTextNew,output,len); 
+        aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
+        output = ( char *)er2->decrypt_AES(block1,mode);
+        er2->checkStringMatch(plainTextNew,output,len);
         free(output);
         delete[] block1->data;
         delete block1;
@@ -204,6 +219,7 @@ int main()
 	
 	//delete des_key2;
     //delete testMessage;
+    
     delete[] formattedNewPlainText;
     delete er2;
     return 0;

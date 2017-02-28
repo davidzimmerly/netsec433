@@ -176,6 +176,7 @@ int main()
 		
 		rsa->encryptPIN();
 		rsa->decryptPIN();
+        delete rsa;
 	}*/
 	
 	//delete des_key2;

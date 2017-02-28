@@ -104,12 +104,14 @@ void encrypt_ram_rsa::decryptString(){
 void encrypt_ram_rsa::encryptPIN(){
 	BigInteger pin_temp = BigInteger(pin);
 
+	/*
 	// Encrypts int
 	for (int i = 1; i < e; i++) {
 		pin_temp *= pin;
 	}
 
 	encrypted_pin = BigInteger(pin_temp % n);
+	*/
 	
 	BigInteger result = 1;
 	long long int exponent = e;
@@ -123,6 +125,8 @@ void encrypt_ram_rsa::encryptPIN(){
 	}
 	
 	encrypted_pin = result;
+	
+
 	
 	std::cerr << "Public Key PIN: " << pin_temp.getNumber() << std::endl;
 	std::cerr << "Encrypted PIN: " << encrypted_pin.getNumber() << std::endl;
@@ -141,6 +145,7 @@ void encrypt_ram_rsa::decryptPIN(){
 	decrypted_pin %= n;
 	*/
 	
+	
 	BigInteger result = 1;
 	long long int exponent = d;
 	
@@ -154,5 +159,7 @@ void encrypt_ram_rsa::decryptPIN(){
 	
 	decrypted_pin = result;
 	
+
 	std::cerr << "Decrypted PIN: " << decrypted_pin.getNumber() << std::endl;
+
 }

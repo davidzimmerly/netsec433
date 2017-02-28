@@ -84,24 +84,27 @@ int main()
     unsigned int len = plainTextNew1.length();//# characters in plainTextNew, must set input size for now?;
     
     
-    //this decides the amount of space necessary in current block size for plaintext
+    
     unsigned int newSize=len;
     unsigned int total = len;
     newSize = key_length;
-    while (total>key_length){
-        newSize += key_length;
-        total -= key_length;
     
-    }
+           
+        while (total>key_length){
+            newSize += key_length;
+            total -= key_length;
+        
+        }
     
     //const unsigned char * plainTextNew = reinterpret_cast<const unsigned char *> (plainTextNew1.c_str());//errors
     char plainTextNew[newSize];
-    std::size_t length = plainTextNew1.copy(plainTextNew,plainTextNew1.length(),0);
-    std::cerr << "plainTextNewsize: "<<length<< std::endl;//256
     for (unsigned int u=0; u<newSize;u++){
         plainTextNew[u]=0;
     }
 
+    std::size_t length = plainTextNew1.copy(plainTextNew,plainTextNew1.length(),0);
+    std::cerr << "plainTextNewsize: "<<length<< std::endl;//256
+    
 
     std::cerr << "aes blocks to use: "<<newSize<< std::endl;//256
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[newSize];
@@ -134,11 +137,7 @@ int main()
         std::string mode = "CBC";
         aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
         output = er2->decrypt_AES(block1,mode);
-        er2->checkStringMatch(plainTextNew,output,len);
-        for (unsigned int y=0; y<length; y++){
-            std::cerr<<output[y];
-        }
-        std::cerr<<std::endl;
+        er2->checkStringMatch(plainTextNew,output,len);//6 errors len-6 fixes, but truncates string..
         free(output);
         delete[] block1->data;
         delete block1;
@@ -149,7 +148,7 @@ int main()
         std::string mode = "ECB";
         aesBlock* block1 = er2->encrypt_AES((const  char*)plainTextNew,mode,newSize);
         output = ( char *)er2->decrypt_AES(block1,mode);
-        er2->checkStringMatch(plainTextNew,output,len);
+        er2->checkStringMatch(plainTextNew,output,len); //6errors
         free(output);
         delete[] block1->data;
         delete block1;

@@ -4,18 +4,6 @@
 // at the moment.
 #include "encrypt_ram_rsa.h"
 
-long int encrypt_ram_rsa::generatePrime(){
-	long int p = (rand() % 1000) + 1;
-	for (int i = 2; i <= p / 2; i++) {
-		if (!(p % i)) {
-			p++;
-			i = 2;
-		}
-	}
-
-	return p;
-}
-
 int encrypt_ram_rsa::gcd(long int x, int y) {
 	while (y) {
 		int temp = x;
@@ -45,10 +33,24 @@ int encrypt_ram_rsa::modInverse(int a, int m) {
 	return 0;
 }
 
+int expo(int a, int b){
+  int result = 1;
+
+  while (b){
+    if (b%2==1){
+      result *= a;
+    }
+    b /= 2;
+    a *= a;
+  }
+
+  return result;
+}
+
 void encrypt_ram_rsa::generateValues(){
 	while(d == 0){
-		p = generatePrime();
-		q = generatePrime();
+		p = rand_primes[rand() % 168];
+		q = rand_primes[rand() % 168];
 		n = p * q;
 		totient = (p - 1) * (q - 1);
 		e = coprime(totient);
@@ -60,41 +62,43 @@ void encrypt_ram_rsa::encryptString(){
 	vector<long long int> k;
 	std::string x;
 	int y;
-	//long long int test;
+	long long int test;
 	BigInteger z;
 
+	
 	// Encrypts string
-	for (uint i = 0; i < name.size(); i++) {
+	for (int i = 0; i < name.size(); i++) {
 		x = to_string((int)name.at(i));
 		y = (int)name.at(i);
 		z = BigInteger(x);
 		name.at(i) = 'x';
 		for (int j = 1; j < e; j++) {
 			z *= y;
+			z %= n;
 		}
-		z %= n;
 		fn.push_back(stoll(z.getNumber()));
 	}
-	std::cout << z.getNumber() << std::endl;
+	std::cerr << z.getNumber() << std::endl;
 }
 
 void encrypt_ram_rsa::decryptString(){
+	std::cerr << "Yo!" << std::endl;
 	BigInteger z2;
 	long long int y2;
 	string s;
 
 	// Decrypts string
-	for (uint i = 0; i < name.size(); i++) {
+	for (int i = 0; i < name.size(); i++) {
 		z2 = BigInteger(fn.at(i));
 		y2 = fn.at(i);
 		for (int j = 1; j < d; j++) {
 			z2 *= y2;
+			z2 %= n;
 		}
-		z2 %= n;
 		int guy = stoi(z2.getNumber());
 		s.push_back(static_cast<char>(guy));
 	}
-	std::cout << s;
+	std::cerr << s << std::endl;
 }
 
 void encrypt_ram_rsa::encryptPIN(){
@@ -106,23 +110,49 @@ void encrypt_ram_rsa::encryptPIN(){
 	}
 
 	encrypted_pin = BigInteger(pin_temp % n);
-
-	std::cout << "Public Key PIN: " << pin_temp.getNumber() << std::endl;
-	std::cout << "Encrypted PIN: " << encrypted_pin.getNumber() << std::endl;
+	
+	BigInteger result = 1;
+	long long int exponent = e;
+	
+	while (exponent > 0){
+		if (exponent % 2 == 1){
+			result = (result * pin_temp) % n;
+		}
+		exponent = exponent >> 1;
+		pin_temp = (pin_temp * pin_temp) % n;
+	}
+	
+	encrypted_pin = result;
+	
+	std::cerr << "Public Key PIN: " << pin_temp.getNumber() << std::endl;
+	std::cerr << "Encrypted PIN: " << encrypted_pin.getNumber() << std::endl;
 }
 
 void encrypt_ram_rsa::decryptPIN(){
 	decrypted_pin = BigInteger(encrypted_pin);
 	dec_mult_pin = BigInteger(encrypted_pin);
-	encrypted_pin = BigInteger("");
 	
+	/*
 	// Decrypts Int
 	for (int i = 1; i < d; i++) {
 		decrypted_pin *= dec_mult_pin;
 	}
-
+	
 	decrypted_pin %= n;
-
-	std::cout << "Decrypted PIN: " << decrypted_pin.getNumber() << std::endl;
-
+	*/
+	
+	BigInteger result = 1;
+	long long int exponent = d;
+	
+	while (exponent > 0){
+		if (exponent % 2 == 1){
+			result = (result * dec_mult_pin) % n;
+		}
+		exponent = exponent >> 1;
+		dec_mult_pin = (dec_mult_pin * dec_mult_pin) % n;
+	}
+	
+	decrypted_pin = result;
+	
+	std::cerr << "Decrypted PIN: " << decrypted_pin.getNumber() << std::endl;
 }

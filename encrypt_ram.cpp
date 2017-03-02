@@ -45,7 +45,7 @@ encrypt_ram::encrypt_ram(){
     
 }
 
-encrypt_ram::encrypt_ram(unsigned long long & key){
+void encrypt_ram::setDESKey(unsigned long long & key){
 //begin init
     if (!Check_CPU_support_AES()){
         printf("Cpu does not support AES instruction set. Bailing out.\n");

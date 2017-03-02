@@ -4,8 +4,8 @@
 
 int main()
 {
-    int stress_iterations=1;
-    unsigned int key_length = 256;
+    //int stress_iterations=1;
+    //unsigned int key_length = 256;
     //configuration options (for json test) 
     /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
@@ -18,14 +18,15 @@ int main()
     file.close();*/
     /***********************************************************************************************************/
 
-    /*unsigned long long* des_key = new unsigned long long;
+    unsigned long long* des_key = new unsigned long long;
     *des_key = 1383827165325090801;
-    encrypt_ram* er = new encrypt_ram(*des_key);
+    encrypt_ram* er = new encrypt_ram();
+    er->setDESKey(*des_key);
     if (!er->Check_CPU_support_AES()){
         printf("Cpu does not support AES instruction set. Bailing out.\n");
         return 1;
     }
-    */
+    
     //initial  memory search hex editor demo:*/
     /*
     bool done = false;
@@ -50,18 +51,18 @@ int main()
     }*/
     
 
-    /*unsigned long long* testMessage = new unsigned long long;
+    unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
     er->desEncrypt(*testMessage);
     std::cerr <<"Test Message= "<< *testMessage << std::endl;
     er->desDecrypt(*testMessage);
     std::cerr <<"Test Message= "<< *testMessage << std::endl;
     delete des_key;
-    delete er;*/
+    delete er;
 
 
-    encrypt_ram* er2; 
-    er2 = new encrypt_ram();
+//    encrypt_ram* er2; 
+//    er2 = new encrypt_ram();
     
 /***********************************************************************************************************/    
 
@@ -79,7 +80,7 @@ int main()
 
     //aes new key / new text example:
     
-    std::string plainText="837648asdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahasdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
+  /*  std::string plainText="837648asdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahasdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
     er2->getNewAESKey(key_length);
     std::cerr<<"testing "<<key_length<<"-bit key..";
     //need to change #DEFINE for test as well as key size and LENGTH =thisx2
@@ -118,7 +119,7 @@ int main()
     
     std::cerr<<"/ECB...OK"<<std::endl;
     
-    
+    */
 	/*
 	// RSA - Because this takes an inordinate amount of time to run,
 	// it asks the user if they'd like to opt out
@@ -180,10 +181,10 @@ int main()
 	}*/
 	
 	//delete des_key2;
-    //delete testMessage;
+    delete testMessage;
     
     //delete[] formattedNewPlainText;
-    delete er2;
+    //delete er2;
     return 0;
 }
 

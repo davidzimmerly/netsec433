@@ -121,7 +121,7 @@ class encrypt_ram{
         void getNewAESKey(int size);
         void print_m128i_with_string(char const* string,__m128i data);
         encrypt_ram();
-        encrypt_ram(unsigned long long & key);
+        void setDESKey(unsigned long long & key);
         ~encrypt_ram();
         void encrypt(std::string &message){
         //    for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)

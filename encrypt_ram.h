@@ -111,38 +111,40 @@ class encrypt_ram{
         int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
-  
-        
-    public:
-        AES_KEY key, decrypt_key;
-        ALIGN16 uint8_t* aesKey;
-        int aesKeySize;
-        int Check_CPU_support_AES();
-        bool anyKey();
-        static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
-        std::string call_curl(std::string address, std::string arguments);
-        unsigned long long* nstring_to_ull(std::string input);
-        std::string string_to_nstring(std::string &input);
-        std::string ull_to_string(unsigned long long &input);
-        unsigned long long* getNewLL();
-        void getNewAESKey(int size);
-        void print_m128i_with_string(char const* string,__m128i data);
-        encrypt_ram();
-        void setDESKey(unsigned long long & key);
-        ~encrypt_ram();
-        void encrypt(std::string &message){
-        //    for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }//simple XOR encrypt with key (key should be as long as input, ensure key size on update)
-        }
-        void decrypt(std::string &message){
-           encrypt(message);
-        }
-        
         void desEncryptSingleBlock(unsigned long long & message);
         void desDecryptSingleBlock(unsigned long long & message);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
+        AES_KEY key, decrypt_key;
+        ALIGN16 uint8_t* aesKey;
+        int aesKeySize;
+        static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
+        void print_m128i_with_string(char const* string,__m128i data);
+        
+        
+    public:
+        encrypt_ram();
+        ~encrypt_ram();
+        int Check_CPU_support_AES();
+        bool anyKey();
+        std::string call_curl(std::string address, std::string arguments);
+        std::string string_to_nstring(std::string &input);
+        unsigned long long* nstring_to_ull(std::string input);
+        std::string ull_to_string(unsigned long long &input);
+        unsigned long long* getNewLL();
+        void checkStringMatch(std::string* string1,  std::string* string2);
+        
+        //simple XOR encrypt with key (key should be as long as input, ensure key size on update)
+        /*void encrypt(std::string &message){for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }        }
+        void decrypt(std::string &message){encrypt(message);}*/ 
+
+        //AES//
+        void setAESKey(int size);
         aesBlock* encrypt_AES(std::string &input, std::string mode);
         std::string* decrypt_AES(aesBlock* input, std::string mode);
-        void checkStringMatch(std::string* string1,  std::string* string2);
+        
+        
+        //DES//
+        void setDESKey(unsigned long long & key);
         desBlock* encrypt_DES(std::string &input);
         void decrypt_DES(desBlock* input);
 };

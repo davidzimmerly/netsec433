@@ -22,10 +22,6 @@ int main()
     *des_key = 1383827165325090801;
     encrypt_ram* er = new encrypt_ram();
     er->setDESKey(*des_key);
-    if (!er->Check_CPU_support_AES()){
-        printf("Cpu does not support AES instruction set. Bailing out.\n");
-        return 1;
-    }
     
     //initial  memory search hex editor demo:*/
     /*
@@ -103,7 +99,7 @@ int main()
     //aes new key / new text example:
     
   /*  std::string plainText="837648asdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahasdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
-    er2->getNewAESKey(key_length);
+    er2->setAESKey(key_length);
     std::cerr<<"testing "<<key_length<<"-bit key..";
     //need to change #DEFINE for test as well as key size and LENGTH =thisx2
     for(int stress=0; stress<stress_iterations; stress++){

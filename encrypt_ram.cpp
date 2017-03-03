@@ -427,6 +427,7 @@ void encrypt_ram::bitwiseSplitDES(unsigned long long &input, unsigned int &leftD
 }
 
 int encrypt_ram::Check_CPU_support_AES(){
+    //INTEL CODE
     unsigned int a,b,c,d;
     cpuid(1, a,b,c,d);
     return (c & 0x2000000);
@@ -434,6 +435,7 @@ int encrypt_ram::Check_CPU_support_AES(){
 
 
 __m128i encrypt_ram::AES_128_ASSIST (__m128i temp1, __m128i temp2){
+    //INTEL CODE
     __m128i temp3;
     temp2 = _mm_shuffle_epi32 (temp2 ,0xff);
     temp3 = _mm_slli_si128 (temp1, 0x4);
@@ -447,6 +449,7 @@ __m128i encrypt_ram::AES_128_ASSIST (__m128i temp1, __m128i temp2){
 }
 
 void encrypt_ram::AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key){
+    //INTEL CODE
     __m128i temp1, temp2;
     __m128i *Key_Schedule = (__m128i*)key;
     temp1 = _mm_loadu_si128((__m128i*)userkey);
@@ -485,6 +488,7 @@ void encrypt_ram::AES_128_Key_Expansion (const unsigned char *userkey,const unsi
 
 /* Note – the length of the output buffer is assumed to be a multiple of 16 bytes */
 void encrypt_ram::AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds){
+    //INTEL CODE
     __m128i tmp;
     unsigned int i;
     int j;
@@ -510,6 +514,7 @@ void encrypt_ram::AES_ECB_encrypt(const unsigned char *in,unsigned char *out,uns
 }
 
 void encrypt_ram::AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds){
+    //INTEL CODE
     __m128i tmp;
     unsigned int i;
     int j;
@@ -534,6 +539,7 @@ void encrypt_ram::AES_ECB_decrypt(const unsigned char *in,unsigned char *out,uns
 }
 
 void encrypt_ram::KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp3){
+    //INTEL CODE
     __m128i temp4;
     *temp2 = _mm_shuffle_epi32 (*temp2, 0x55);
     temp4 = _mm_slli_si128 (*temp1, 0x4);
@@ -550,6 +556,7 @@ void encrypt_ram::KEY_192_ASSIST(__m128i* temp1, __m128i * temp2, __m128i * temp
 }
 
 void encrypt_ram::AES_192_Key_Expansion (const unsigned char *userkey,unsigned char *key){
+    //INTEL CODE
     __m128i temp1, temp2, temp3;
     __m128i *Key_Schedule = (__m128i*)key;
     temp1 = _mm_loadu_si128((__m128i*)userkey);
@@ -593,6 +600,7 @@ void encrypt_ram::AES_192_Key_Expansion (const unsigned char *userkey,unsigned c
 }
 
 void encrypt_ram::KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2){
+    //INTEL CODE
     __m128i temp4;
     *temp2 = _mm_shuffle_epi32(*temp2, 0xff);
     temp4 = _mm_slli_si128 (*temp1, 0x4);
@@ -605,6 +613,7 @@ void encrypt_ram::KEY_256_ASSIST_1(__m128i* temp1, __m128i * temp2){
 }
 
 void encrypt_ram::KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3){
+    //INTEL CODE
     __m128i temp2,temp4;
     temp4 = _mm_aeskeygenassist_si128 (*temp1, 0x0);
     temp2 = _mm_shuffle_epi32(temp4, 0xaa);
@@ -618,6 +627,7 @@ void encrypt_ram::KEY_256_ASSIST_2(__m128i* temp1, __m128i * temp3){
 }
 
 void encrypt_ram::AES_256_Key_Expansion (const unsigned char *userkey,const unsigned char *key){
+    //INTEL CODE
     __m128i temp1, temp2, temp3;
     __m128i *Key_Schedule = (__m128i*)key;
     temp1 = _mm_loadu_si128((__m128i*)userkey);
@@ -660,6 +670,7 @@ void encrypt_ram::AES_256_Key_Expansion (const unsigned char *userkey,const unsi
 }
 
 void encrypt_ram::AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds){
+    //INTEL CODE
     __m128i feedback,data;
     unsigned int i;
     int j;
@@ -680,6 +691,7 @@ void encrypt_ram::AES_CBC_encrypt(const unsigned char *in,unsigned char *out,uns
 }
 
 void encrypt_ram::AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds){
+    //INTEL CODE
     __m128i data,feedback,last_in;
     unsigned int i;
     int j;
@@ -702,6 +714,7 @@ void encrypt_ram::AES_CBC_decrypt(const unsigned char *in,unsigned char *out,uns
 }
 
 void encrypt_ram::AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds){
+    //INTEL CODE
     __m128i ctr_block, tmp, ONE, BSWAP_EPI64;
     unsigned int i;
     int j;
@@ -788,7 +801,6 @@ int encrypt_ram::AES_set_decrypt_key (const unsigned char *userKey,const int bit
 }
 
 void encrypt_ram::setAESKey(int size){
-    
     int keys=0;
     std::string resultString="";
     keys=size/8;
@@ -935,7 +947,7 @@ unsigned long long* encrypt_ram::getNewLL(){
 void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],
 unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,
 const unsigned char *key,int nr){
-
+    //INTEL CODE
     __m128i feedback1,feedback2,feedback3,feedback4;
     __m128i data1,data2,data3,data4;
     unsigned int i;

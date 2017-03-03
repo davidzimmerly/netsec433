@@ -54,11 +54,38 @@ int main()
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
     er->desEncrypt(*testMessage);
-    std::cerr <<"Test Message= "<< *testMessage << std::endl;
+    //std::cerr <<"Test Message= "<< *testMessage << std::endl;
     er->desDecrypt(*testMessage);
-    std::cerr <<"Test Message= "<< *testMessage << std::endl;
+    //std::cerr <<"Test Message= "<< *testMessage << std::endl;
+    std::string convertMe = "davidz";
+    std::string convertedString= er->string_to_nstring(convertMe);
+    
+    //std::cerr<<std::endl;
+
+    //for (uint8_t k=0; k<convertedString.length(); k++)
+        //std::cerr<<convertedString[k];
+    //std::cerr<<std::endl<<"string length="<<convertedString.length()<<std::endl;
+    unsigned long long* temp = er->nstring_to_ull(convertedString);
+    //std::cerr<<std::endl<<temp<<std::endl;
+    //std::string output =er->ull_to_string(*temp);
+    //std::cerr<<output<<std::endl;
+    
+    er->desEncrypt(*temp);
+    std::cerr <<"Test Message convert = "<< *temp << std::endl;
+    er->desDecrypt(*temp);
+    std::cerr <<"Test Message convert = "<< *temp << std::endl;
+    
+std::string output =er->ull_to_string(*temp);
+    std::cerr<<output<<std::endl;
+    
+
+
+
+
     delete des_key;
+    delete temp;
     delete er;
+        
 
 
 //    encrypt_ram* er2; 
@@ -66,8 +93,8 @@ int main()
     
 /***********************************************************************************************************/    
 
-    //unsigned long long* des_key2=new unsigned long long;
-    //*des_key2 = er2->getNewLL();  //think bug is here 
+    //unsigned long long* des_key2;//=new unsigned long long;//need to retest this, changed to ptr
+    //des_key2 = er2->getNewLL();  //think bug is here 
     //std::cerr <<"new key: "<<*des_key2<<std::endl;
 
 

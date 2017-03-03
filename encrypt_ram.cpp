@@ -754,20 +754,60 @@ void encrypt_ram::getNewAESKey(int size){
     
 }
 
-unsigned long long encrypt_ram::string_to_ull(std::string input){//wrapper for stoull call
+//converts NUMERICAL string..
+unsigned long long* encrypt_ram::nstring_to_ull(std::string input){//wrapper for stoull call
     std::string str = input;
-    for(unsigned int i=0; i<str.length()&&str.length()!=0; i++)
+    for(unsigned int i=0; i<8&&str.length()!=0; i++)
         if(str[i] == ' '){
             str.erase(i,1);
             i=0;
         }
     std::string::size_type sz = 0;   // alias of size_t
-    unsigned long long ll=0;
+    unsigned long long* ll=new unsigned long long;
+    *ll=0;
     while (!str.empty()){
-        ll = std::stoull (str,&sz,0);
+        *ll = std::stoull (str,&sz,0);
         str = str.substr(sz);
     }
     return ll;
+}
+
+std::string encrypt_ram::string_to_nstring(std::string &input){//wrapper for stoull call
+    std::string convertedString="";
+    for (uint8_t f=0; f<6; f++){//can fit 18x3 digit combos inside 64 bit long long
+        if (f<input.length()){
+            std::string addMe= std::to_string((int)input[f]);
+            if (addMe.length()<2)
+                addMe.insert(0,"00");
+            else if (addMe.length()<3)
+                addMe.insert(0,"0");
+            convertedString+=addMe;
+        }
+        else{//string was short characters, pad 0s at end for null 
+            convertedString+="000";
+        }
+
+    }
+    return convertedString;
+    
+}
+
+std::string encrypt_ram::ull_to_string(unsigned long long &input){
+    //input should be 18 digits
+    std::string output="asdfgh";//initalize 6 digits so can access each position
+    unsigned long long mod =1000000000000000; //since input should be 18 digit will use this:
+                                              //basically to "decimal shift" the number by groups of 3 digits
+    unsigned int temp;
+    for (int j=0; j<6; j++){
+        temp = input/mod;
+        output[j]=(char)temp;   
+        input -=mod*temp;
+        mod/=1000;
+    }
+    
+    
+    
+    return output;
 }
 
 //need input checking on values here! arguments, set to NONE for single line call
@@ -793,8 +833,6 @@ std::string encrypt_ram::call_curl(std::string address, std::string arguments){
             fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(responseFromRequest));
             exit(1);
         }
-        // always cleanup 
-        
     }
     curl_easy_cleanup(curl);
     curl_global_cleanup();
@@ -821,8 +859,8 @@ size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, voi
     return size * nmemb;
 }
 
-unsigned long long encrypt_ram::getNewLL(){
-    return encrypt_ram::string_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
+unsigned long long* encrypt_ram::getNewLL(){
+    return encrypt_ram::nstring_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
 }
 
 void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],

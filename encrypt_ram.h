@@ -41,7 +41,7 @@ class encrypt_ram{
 
         //std::string key = "94307803947898";//for initial encryption method XOR
         void leftShift(unsigned int &input);
-        unsigned int function_s(int table,int row, int column );
+        unsigned int function_s(uint8_t table,uint8_t row, uint8_t column );
         unsigned long long* K[17];
         unsigned long long* K2[17];
         unsigned long long* K3[17];
@@ -64,10 +64,8 @@ class encrypt_ram{
         void bitwiseSplitDES(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits);
         void setBit(unsigned long long &input, int bit, bool value){ input |= value << bit; }
         void setBit(unsigned int &input, int bit, bool value){ input |= value << bit; }
-        void setBit(unsigned short &input, int bit, bool value){ input |= value << bit; }
         void clearBit(unsigned long long &input, int bit){ input &= ~(1 << bit ); }
         void clearBit(unsigned int &input, int bit){ input &= ~(1 << bit ); }
-        void clearBit(unsigned short &input, int bit){ input &= ~(1 << bit ); }
         void toggleBit(unsigned long long &input, int bit){ input ^= 1 << bit ; }
         void toggleBit(unsigned int &input, int bit){ input ^= 1 << bit ; }
         void toggleBit(unsigned short &input, int bit){ input ^= 1 << bit ; }

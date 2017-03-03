@@ -27,6 +27,7 @@ unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* k
             setBit(f_result,position2--,checkBit(result,x) );
         }
     }
+    *e=0;
     delete e;
     return permutePbit(f_result);
 }
@@ -101,6 +102,8 @@ void encrypt_ram::setDESKey(){
         K2[x] = permuteKey2(C2[x],D2[x]);
         K3[x] = permuteKey2(C3[x],D3[x]);
     }
+    *permutation1a=*permutation1b=*permutation1c=0;
+    *key=*key2=*key3=0;
     delete permutation1a;
     delete permutation1b;
     delete permutation1c;
@@ -114,12 +117,18 @@ encrypt_ram::~encrypt_ram(){
     if (aesKey!=NULL)
         delete[] aesKey;
     for (int x=1; x<=16; x++){
-        if (K[x]!=NULL)
+        if (K[x]!=NULL){
+            *K[x]=0;
             delete K[x];
-        if (K2[x]!=NULL)
+        }
+        if (K2[x]!=NULL){
+            *K2[x]=0;
             delete K2[x];
-        if (K3[x]!=NULL)
+        }
+        if (K3[x]!=NULL){
+            *K3[x]=0;
             delete K3[x];
+        }
     }
 }
 
@@ -154,9 +163,11 @@ void encrypt_ram::desEncryptSingleBlock(unsigned long long & message,uint8_t key
     //std::cerr << "this is encrypted value of input : "<<std::hex << *finalPermutation << std::dec<<std::endl;
     //std::cerr << "this is decimal equivalent: " << *finalPermutation << std::dec<<std::endl;
     //cleanup
+    *initialPermutation=*finalPermutation=0;
     delete initialPermutation;
     delete finalPermutation;
     for (int n = 0 ; n<=16 ; n++){
+        *l[n]= *r[n]=0;
         delete l[n];
         delete r[n];
     }
@@ -180,11 +191,9 @@ void encrypt_ram::checkDESkeyChoice(uint8_t key){
 desBlock* encrypt_ram::encrypt_DES(std::string &input,std::string mode){
     checkDESMode(mode);
     desBlock* newBlock=new desBlock;
-    //std::cerr<<"input size: "<<input.length()<<std::endl;
     unsigned int desBlocks = input.length()/6;
-    if (input.length()%6>0)
+    if (input.length()%6>0)//if leftovers after full blocks, fill partial block
         desBlocks++;
-    //std::cerr<<"des Blocks needed: "<<desBlocks<<std::endl;
     newBlock->size = desBlocks;
     newBlock->data = new unsigned long long[desBlocks];
     int position=0;
@@ -194,6 +203,7 @@ desBlock* encrypt_ram::encrypt_DES(std::string &input,std::string mode){
         position +=6;
         unsigned long long * temp3 = nstring_to_ull(temp2);
         newBlock->data[j] = *temp3;
+        *temp3=0;
         delete temp3;
         
         desEncryptSingleBlock(newBlock->data[j],1);
@@ -201,12 +211,6 @@ desBlock* encrypt_ram::encrypt_DES(std::string &input,std::string mode){
             desDecryptSingleBlock(newBlock->data[j],2);
             desEncryptSingleBlock(newBlock->data[j],3);
         }
-
-        //std::cerr<<newBlock->data[0]<<std::endl;
-        //desDecryptSingleBlock(newBlock->data[j]);
-        //std::cerr<<newBlock->data[1]<<std::endl;
-        //std::cerr<<ull_to_string(*newBlock->data)<<std::endl;
-        
 
     }
     return newBlock;
@@ -221,16 +225,8 @@ void encrypt_ram::decrypt_DES(desBlock* input,std::string mode){
             desEncryptSingleBlock(input->data[j],2);
         }
         desDecryptSingleBlock(input->data[j],1);
-        //std::cerr<<newBlock->data[1]<<std::endl;
-        //std::cerr<<ull_to_string(*newBlock->data)<<std::endl;
-
     }
-       
-
-    
 }
-
-
 
 void encrypt_ram::desDecryptSingleBlock(unsigned long long & message,uint8_t key){
     checkDESkeyChoice(key);
@@ -252,7 +248,6 @@ void encrypt_ram::desDecryptSingleBlock(unsigned long long & message,uint8_t key
             r[n] = function_f(r[n-1],K2[17-n]);//^*l[0];
         else//key==3
             r[n] = function_f(r[n-1],K3[17-n]);//^*l[0];
-        
         *r[n] = (*r[n])^(*l[n-1]);
     }
     unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
@@ -260,18 +255,16 @@ void encrypt_ram::desDecryptSingleBlock(unsigned long long & message,uint8_t key
     //this may need to change, the behavior switchs the values
     message =*finalPermutation;
     //cleanup
+    *finalPermutation=*initialPermutation=0;
     delete initialPermutation;
     delete finalPermutation;
     for (int n = 0 ; n<=16 ; n++){
+        *l[n]=*r[n]=0;
         delete l[n];
         delete r[n];
     }
 }
 
-
-
-
-//we probably want some functionality to clear all variable values on exit??
 void encrypt_ram::leftShift(unsigned int &input){
     bool bit = checkBit(input,27);//this is special function for 28 bit keys, but still should modularize it
     input= input<<1;
@@ -374,8 +367,8 @@ void encrypt_ram::displayBinaryX(unsigned long long input,unsigned int bits){
     }
 }
 
-unsigned int encrypt_ram::function_s(int table,int row, int column ){
-   int address = (row) * 16 + (column);
+unsigned int encrypt_ram::function_s(uint8_t table,uint8_t row, uint8_t column ){
+   uint8_t address = (row) * 16 + (column);
    switch(table){
     case 1:
         return s1[address];

@@ -66,10 +66,13 @@ int main()
     
     for (int x = 0; x<newBlock->size; x++){
         output+=er->ull_to_string(newBlock->data[x]);
+        newBlock->data[x]=0;
     }
     std::cerr<<"decrypted output:"<<output<<std::endl;
+
     delete[] newBlock->data;
     delete newBlock;
+    *temp=0;
     delete temp;
     delete er;
         
@@ -195,6 +198,7 @@ int main()
 	}*/
 	
 	//delete des_key2;
+    *testMessage=0;
     delete testMessage;
     
     //delete[] formattedNewPlainText;

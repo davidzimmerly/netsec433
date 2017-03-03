@@ -40,39 +40,73 @@ encrypt_ram::encrypt_ram(){
     aesKeySize = 0;
     for (int j=0; j<=16; j++){
         K[j]=NULL;
+        K2[j]=NULL;
+        K3[j]=NULL;
     }
     
     
 }
 
-void encrypt_ram::setDESKey(unsigned long long & key){
+void encrypt_ram::setDESKey(){
 //begin init
     aesKey=NULL;
     aesKeySize = 0;
-    for (int j=0; j<=16; j++){
-        K[j]=NULL;
-    }
-    unsigned long long* permutation1;
-    permutation1 = permuteKey(key);
+    unsigned long long* key=getNewLL();
+    unsigned long long* key2=getNewLL();
+    unsigned long long* key3=getNewLL();
+    unsigned long long* permutation1a;
+    unsigned long long* permutation1b;
+    unsigned long long* permutation1c;
+    
+    permutation1a = permuteKey(*key);
+    permutation1b = permuteKey(*key2);
+    permutation1c = permuteKey(*key3);
     unsigned int C[17], D[17]; //16+1 for the initial split
-    bitwiseSplitDES(*permutation1,C[0],D[0]);//this is the initial split
+    unsigned int C2[17], D2[17]; //16+1 for the initial split
+    unsigned int C3[17], D3[17]; //16+1 for the initial split
+    bitwiseSplitDES(*permutation1a,C[0],D[0]);//this is the initial split
+    bitwiseSplitDES(*permutation1b,C2[0],D2[0]);//this is the initial split
+    bitwiseSplitDES(*permutation1c,C3[0],D3[0]);//this is the initial split
 
     //creates 16 48-bit subkeys (extra bits are cleared at left for easy c++)
     for (int x=1; x<=16; x++){
         //left shift
         C[x] = C[x-1];
         D[x] = D[x-1];
+        C2[x] = C2[x-1];
+        D2[x] = D2[x-1];
+        C3[x] = C3[x-1];
+        D3[x] = D3[x-1];
+        
+
         leftShift(C[x]);
         leftShift(D[x]);
+        leftShift(C2[x]);
+        leftShift(D2[x]);
+        leftShift(C3[x]);
+        leftShift(D3[x]);
+                
+
         if (x>=3 && x!=16 && x!=9){
             leftShift(C[x]);
             leftShift(D[x]);
+            leftShift(C2[x]);
+            leftShift(D2[x]);
+            leftShift(C3[x]);
+            leftShift(D3[x]);
         }
     }
     for (int x=1; x<=16; x++){
         K[x] = permuteKey2(C[x],D[x]);
+        K2[x] = permuteKey2(C2[x],D2[x]);
+        K3[x] = permuteKey2(C3[x],D3[x]);
     }
-    delete permutation1;
+    delete permutation1a;
+    delete permutation1b;
+    delete permutation1c;
+    delete key;
+    delete key2;
+    delete key3;
 }
 
 encrypt_ram::~encrypt_ram(){
@@ -82,6 +116,10 @@ encrypt_ram::~encrypt_ram(){
     for (int x=1; x<=16; x++){
         if (K[x]!=NULL)
             delete K[x];
+        if (K2[x]!=NULL)
+            delete K2[x];
+        if (K3[x]!=NULL)
+            delete K3[x];
     }
 }
 
@@ -761,16 +799,12 @@ unsigned long long* encrypt_ram::nstring_to_ull(std::string input){//wrapper for
     std::string str = input;
     for(unsigned int i=0; i<8&&str.length()!=0; i++)
         if(str[i] == ' '){
-            str.erase(i,1);
-            i=0;
+            str.erase(i--,1);            
         }
     std::string::size_type sz = 0;   // alias of size_t
     unsigned long long* ll=new unsigned long long;
     *ll=0;
-    while (!str.empty()){
-        *ll = std::stoull (str,&sz,0);
-        str = str.substr(sz);
-    }
+    *ll = std::stoull (str,&sz,0);
     return ll;
 }
 

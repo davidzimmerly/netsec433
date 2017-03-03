@@ -43,6 +43,8 @@ class encrypt_ram{
         void leftShift(unsigned int &input);
         unsigned int function_s(int table,int row, int column );
         unsigned long long* K[17];
+        unsigned long long* K2[17];
+        unsigned long long* K3[17];
         void displayBinary(unsigned long long input);
         void displayBinary(unsigned int input);
         void displayBinaryX(unsigned int input,unsigned int bits);
@@ -144,7 +146,7 @@ class encrypt_ram{
         
         
         //DES//
-        void setDESKey(unsigned long long & key);
+        void setDESKey();
         desBlock* encrypt_DES(std::string &input);
         void decrypt_DES(desBlock* input);
 };

@@ -6,6 +6,7 @@ int main()
 {
     //int stress_iterations=1;
     //unsigned int key_length = 256;
+    
     //configuration options (for json test) 
     /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
@@ -18,11 +19,8 @@ int main()
     file.close();*/
     /***********************************************************************************************************/
 
-    unsigned long long* des_key = new unsigned long long;
-    *des_key = 1383827165325090801;
     encrypt_ram* er = new encrypt_ram();
-    er->setDESKey(*des_key);
-    
+    er->setDESKey();
     //initial  memory search hex editor demo:*/
     /*
     bool done = false;
@@ -55,7 +53,6 @@ int main()
     //std::cerr <<"Test Message= "<< *testMessage << std::endl;
     std::string convertMe = "davidzssdjkfhldskjfhlksdjhfldskjhfldksjhfklsdjhfjkdhfkdjfdmknbf,dmnbfdm,nbzzz";
     std::string convertedString= er->string_to_nstring(convertMe);
-    
     unsigned long long* temp = er->nstring_to_ull(convertedString);
     
     //er->desEncryptSingleBlock(*temp);
@@ -73,7 +70,6 @@ int main()
     std::cerr<<"decrypted output:"<<output<<std::endl;
     delete[] newBlock->data;
     delete newBlock;
-    delete des_key;
     delete temp;
     delete er;
         

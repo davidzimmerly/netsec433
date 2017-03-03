@@ -89,7 +89,7 @@ encrypt_ram::~encrypt_ram(){
     }
 }
 
-void encrypt_ram::desEncrypt(unsigned long long & message){
+void encrypt_ram::desEncryptSingleBlock(unsigned long long & message){
     unsigned long long* initialPermutation;
     initialPermutation = permuteInitial(message);
     unsigned int *l[17], *r[17];
@@ -123,7 +123,49 @@ void encrypt_ram::desEncrypt(unsigned long long & message){
 
 }
 
-void encrypt_ram::desDecrypt(unsigned long long & message){
+desBlock* encrypt_ram::encrypt_DES(std::string &input){
+    desBlock* newBlock=new desBlock;
+    //std::cerr<<"input size: "<<input.length()<<std::endl;
+    unsigned int desBlocks = input.length()/6;
+    if (input.length()%6>0)
+        desBlocks++;
+    //std::cerr<<"des Blocks needed: "<<desBlocks<<std::endl;
+    newBlock->size = desBlocks;
+    newBlock->data = new unsigned long long[desBlocks];
+    int position=0;
+    for (unsigned int j=0; j<desBlocks; j++){
+        std::string temp = input.substr(position,6);
+        std::string temp2 = string_to_nstring(temp);
+        position +=6;
+        unsigned long long * temp3 = nstring_to_ull(temp2);
+        newBlock->data[j] = *temp3;
+        delete temp3;
+        desEncryptSingleBlock(newBlock->data[j]);
+        //std::cerr<<newBlock->data[0]<<std::endl;
+        //desDecryptSingleBlock(newBlock->data[j]);
+        //std::cerr<<newBlock->data[1]<<std::endl;
+        //std::cerr<<ull_to_string(*newBlock->data)<<std::endl;
+
+    }
+    return newBlock;
+}
+
+void encrypt_ram::decrypt_DES(desBlock* input){
+    unsigned int desBlocks = input->size;
+    for (unsigned int j=0; j<desBlocks; j++){
+        desDecryptSingleBlock(input->data[j]);
+        //std::cerr<<newBlock->data[1]<<std::endl;
+        //std::cerr<<ull_to_string(*newBlock->data)<<std::endl;
+
+    }
+       
+
+    
+}
+
+
+
+void encrypt_ram::desDecryptSingleBlock(unsigned long long & message){
     unsigned long long* initialPermutation;
     initialPermutation = permuteInitial(message);
     unsigned int *l[17], *r[17];
@@ -151,6 +193,9 @@ void encrypt_ram::desDecrypt(unsigned long long & message){
         delete r[n];
     }
 }
+
+
+
 
 //we probably want some functionality to clear all variable values on exit??
 void encrypt_ram::leftShift(unsigned int &input){

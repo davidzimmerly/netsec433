@@ -30,6 +30,11 @@ typedef struct AES_BLOCK{
     ALIGN16 uint8_t* data;
 }aesBlock;
 
+typedef struct DES_BLOCK{
+    unsigned short size;
+    unsigned long long* data;
+}desBlock;
+
 
 class encrypt_ram{
     private:
@@ -131,12 +136,13 @@ class encrypt_ram{
         void decrypt(std::string &message){
            encrypt(message);
         }
-        void desEncrypt(unsigned long long & message);
-        void desDecrypt(unsigned long long & message);
+        
+        void desEncryptSingleBlock(unsigned long long & message);
+        void desDecryptSingleBlock(unsigned long long & message);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
         aesBlock* encrypt_AES(std::string &input, std::string mode);
         std::string* decrypt_AES(aesBlock* input, std::string mode);
         void checkStringMatch(std::string* string1,  std::string* string2);
-
- 
+        desBlock* encrypt_DES(std::string &input);
+        void decrypt_DES(desBlock* input);
 };

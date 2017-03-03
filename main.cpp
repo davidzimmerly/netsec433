@@ -53,35 +53,30 @@ int main()
 
     unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
-    er->desEncrypt(*testMessage);
+    //er->desEncryptSingleBlock(*testMessage);
     //std::cerr <<"Test Message= "<< *testMessage << std::endl;
-    er->desDecrypt(*testMessage);
+    //er->desDecrypt(*testMessage);
     //std::cerr <<"Test Message= "<< *testMessage << std::endl;
-    std::string convertMe = "davidz";
+    std::string convertMe = "davidzssdjkfhldskjfhlksdjhfldskjhfldksjhfklsdjhfjkdhfkdjfdmknbf,dmnbfdm,nbzzz";
     std::string convertedString= er->string_to_nstring(convertMe);
     
-    //std::cerr<<std::endl;
-
-    //for (uint8_t k=0; k<convertedString.length(); k++)
-        //std::cerr<<convertedString[k];
-    //std::cerr<<std::endl<<"string length="<<convertedString.length()<<std::endl;
     unsigned long long* temp = er->nstring_to_ull(convertedString);
-    //std::cerr<<std::endl<<temp<<std::endl;
-    //std::string output =er->ull_to_string(*temp);
-    //std::cerr<<output<<std::endl;
     
-    er->desEncrypt(*temp);
-    std::cerr <<"Test Message convert = "<< *temp << std::endl;
-    er->desDecrypt(*temp);
-    std::cerr <<"Test Message convert = "<< *temp << std::endl;
+    //er->desEncryptSingleBlock(*temp);
+    //std::cerr <<"Test Message convert = "<< *temp << std::endl;
+    //er->desDecryptSingleBlock(*temp);
+    //std::cerr <<"Test Message convert = "<< *temp << std::endl;
     
-std::string output =er->ull_to_string(*temp);
-    std::cerr<<output<<std::endl;
+    desBlock * newBlock = er->encrypt_DES(convertMe);    
+    std::string output="";
+    er->decrypt_DES(newBlock);
     
-
-
-
-
+    for (int x = 0; x<newBlock->size; x++){
+        output+=er->ull_to_string(newBlock->data[x]);
+    }
+    std::cerr<<"decrypted output:"<<output<<std::endl;
+    delete[] newBlock->data;
+    delete newBlock;
     delete des_key;
     delete temp;
     delete er;

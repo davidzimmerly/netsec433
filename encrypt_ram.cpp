@@ -123,7 +123,8 @@ encrypt_ram::~encrypt_ram(){
     }
 }
 
-void encrypt_ram::desEncryptSingleBlock(unsigned long long & message){
+void encrypt_ram::desEncryptSingleBlock(unsigned long long & message,uint8_t key){
+    checkDESkeyChoice(key);
     unsigned long long* initialPermutation;
     initialPermutation = permuteInitial(message);
     unsigned int *l[17], *r[17];
@@ -136,7 +137,12 @@ void encrypt_ram::desEncryptSingleBlock(unsigned long long & message){
         l[n] = new unsigned int;
         *l[n] = 0;
         *l[n] = *r[n-1];
-        r[n] = function_f(r[n-1],K[n]);//^*l[0];
+        if (key==1)
+            r[n] = function_f(r[n-1],K[n]);
+        else if (key==2)
+            r[n] = function_f(r[n-1],K2[n]);
+        else //key==3
+            r[n] = function_f(r[n-1],K3[n]);
         *r[n] = (*r[n])^(*l[n-1]);
     }
     unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
@@ -157,7 +163,22 @@ void encrypt_ram::desEncryptSingleBlock(unsigned long long & message){
 
 }
 
-desBlock* encrypt_ram::encrypt_DES(std::string &input){
+void encrypt_ram::checkDESMode(std::string mode){
+    if (!(mode=="single"|| mode=="triple")){
+        std::cerr << "Invalid DES mode selection (single, triple) only.. Exiting"<<std::endl;
+        exit(1);
+    }
+}
+
+void encrypt_ram::checkDESkeyChoice(uint8_t key){
+    if (!(key==1|| key==2 || key==3)){
+        std::cerr << "Invalid DES key choice (1,2,3) only.. Exiting"<<std::endl;
+        exit(1);
+    }
+}
+
+desBlock* encrypt_ram::encrypt_DES(std::string &input,std::string mode){
+    checkDESMode(mode);
     desBlock* newBlock=new desBlock;
     //std::cerr<<"input size: "<<input.length()<<std::endl;
     unsigned int desBlocks = input.length()/6;
@@ -174,20 +195,32 @@ desBlock* encrypt_ram::encrypt_DES(std::string &input){
         unsigned long long * temp3 = nstring_to_ull(temp2);
         newBlock->data[j] = *temp3;
         delete temp3;
-        desEncryptSingleBlock(newBlock->data[j]);
+        
+        desEncryptSingleBlock(newBlock->data[j],1);
+        if (mode=="triple"){
+            desDecryptSingleBlock(newBlock->data[j],2);
+            desEncryptSingleBlock(newBlock->data[j],3);
+        }
+
         //std::cerr<<newBlock->data[0]<<std::endl;
         //desDecryptSingleBlock(newBlock->data[j]);
         //std::cerr<<newBlock->data[1]<<std::endl;
         //std::cerr<<ull_to_string(*newBlock->data)<<std::endl;
+        
 
     }
     return newBlock;
 }
 
-void encrypt_ram::decrypt_DES(desBlock* input){
+void encrypt_ram::decrypt_DES(desBlock* input,std::string mode){
+    checkDESMode(mode);
     unsigned int desBlocks = input->size;
     for (unsigned int j=0; j<desBlocks; j++){
-        desDecryptSingleBlock(input->data[j]);
+        if (mode=="triple"){
+            desDecryptSingleBlock(input->data[j],3); 
+            desEncryptSingleBlock(input->data[j],2);
+        }
+        desDecryptSingleBlock(input->data[j],1);
         //std::cerr<<newBlock->data[1]<<std::endl;
         //std::cerr<<ull_to_string(*newBlock->data)<<std::endl;
 
@@ -199,7 +232,8 @@ void encrypt_ram::decrypt_DES(desBlock* input){
 
 
 
-void encrypt_ram::desDecryptSingleBlock(unsigned long long & message){
+void encrypt_ram::desDecryptSingleBlock(unsigned long long & message,uint8_t key){
+    checkDESkeyChoice(key);
     unsigned long long* initialPermutation;
     initialPermutation = permuteInitial(message);
     unsigned int *l[17], *r[17];
@@ -212,7 +246,13 @@ void encrypt_ram::desDecryptSingleBlock(unsigned long long & message){
         l[n] = new unsigned int;
         *l[n] = 0;
         *l[n] = *r[n-1];
-        r[n] = function_f(r[n-1],K[17-n]);//^*l[0];
+        if (key==1)
+            r[n] = function_f(r[n-1],K[17-n]);//^*l[0];
+        else if (key==2)
+            r[n] = function_f(r[n-1],K2[17-n]);//^*l[0];
+        else//key==3
+            r[n] = function_f(r[n-1],K3[17-n]);//^*l[0];
+        
         *r[n] = (*r[n])^(*l[n-1]);
     }
     unsigned long long val = (unsigned long long) *r[16] << 32 | *l[16]; //combine the two values, but reversed R[16]L[16]
@@ -1021,7 +1061,7 @@ std::string* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
         AES_ECB_decrypt(input->data,( unsigned char *)DECRYPTEDTEXT, input->size, (const char*)decrypt_key.KEY, decrypt_key.nr);
     }
     else{
-        std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
+        std::cerr <<"Invalid mode for encrypt_AES (CTR,CBC,ECB)"<<std::endl;
         exit(1);
     } 
     std::string* output = new std::string(DECRYPTEDTEXT);
@@ -1032,7 +1072,7 @@ std::string* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
 void encrypt_ram::checkStringMatch( std::string* string1,  std::string* string2){
     //for (unsigned int x=0; x<string1.length(); x++){
         if (*string2 != *string1){
-            std::cerr<<"strings unequal in AES <<mode<< mode"<<std::endl;
+            std::cerr<<"strings unequal in AES  mode"<<std::endl;
             exit(1);
         }
     //}

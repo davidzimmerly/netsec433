@@ -60,9 +60,9 @@ int main()
     //er->desDecryptSingleBlock(*temp);
     //std::cerr <<"Test Message convert = "<< *temp << std::endl;
     
-    desBlock * newBlock = er->encrypt_DES(convertMe);    
+    desBlock * newBlock = er->encrypt_DES(convertMe,"triple");    
     std::string output="";
-    er->decrypt_DES(newBlock);
+    er->decrypt_DES(newBlock,"triple");
     
     for (int x = 0; x<newBlock->size; x++){
         output+=er->ull_to_string(newBlock->data[x]);

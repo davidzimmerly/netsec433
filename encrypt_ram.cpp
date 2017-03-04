@@ -187,6 +187,7 @@ void encrypt_ram::checkDESMode(std::string mode){
     }
 }
 
+
 void encrypt_ram::checkDESkeyChoice(uint8_t key){
     if (!(key==1|| key==2 || key==3)){
         std::cerr << "Invalid DES key choice (1,2,3) only.. Exiting"<<std::endl;
@@ -953,9 +954,7 @@ unsigned long long* encrypt_ram::getNewLL(){
 //    return encrypt_ram::nstring_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
 }
 
-void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],
-unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,
-const unsigned char *key,int nr){
+void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr){
     //INTEL CODE
     __m128i feedback1,feedback2,feedback3,feedback4;
     __m128i data1,data2,data3,data4;
@@ -997,6 +996,55 @@ const unsigned char *key,int nr){
     }
 }
 
+void encrypt_ram::AES_CBC_decrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr){
+    __m128i feedback1,feedback2,feedback3,feedback4,last_in1,last_in2,last_in3,last_in4;
+    __m128i data1,data2,data3,data4;
+    unsigned int i;
+    int j;
+    feedback1=_mm_loadu_si128((__m128i*)ivec1);
+    feedback2=_mm_loadu_si128((__m128i*)ivec2);
+    feedback3=_mm_loadu_si128((__m128i*)ivec3);
+    feedback4=_mm_loadu_si128((__m128i*)ivec4);
+    for(i=0; i < length/16/4; i++){
+        last_in1=_mm_loadu_si128 (&((__m128i*)key)[i*4+0]);
+        last_in2=_mm_loadu_si128 (&((__m128i*)key)[i*4+1]);
+        last_in3=_mm_loadu_si128 (&((__m128i*)key)[i*4+2]);
+        last_in4=_mm_loadu_si128 (&((__m128i*)key)[i*4+3]);
+        
+        data1 = _mm_xor_si128 (last_in1,((__m128i*)in)[i*4+0]);
+        data2 = _mm_xor_si128 (last_in2,((__m128i*)in)[i*4+1]);
+        data3 = _mm_xor_si128 (last_in3,((__m128i*)in)[i*4+2]);
+        data4 = _mm_xor_si128 (last_in4,((__m128i*)in)[i*4+3]);
+        for(j=1; j <nr;j++){
+            data1 = _mm_aesdec_si128 (data1,((__m128i*)key)[j]);
+            data2 = _mm_aesdec_si128 (data2,((__m128i*)key)[j]);
+            data3 = _mm_aesdec_si128 (data3,((__m128i*)key)[j]);
+            data4 = _mm_aesdec_si128 (data4,((__m128i*)key)[j]);
+            
+        }
+        data1 = _mm_aesdeclast_si128 (data1,((__m128i*)key)[j]);
+        data2 = _mm_aesdeclast_si128 (data2,((__m128i*)key)[j]);
+        data3 = _mm_aesdeclast_si128 (data3,((__m128i*)key)[j]);
+        data4 = _mm_aesdeclast_si128 (data4,((__m128i*)key)[j]);
+        
+        data1 = _mm_xor_si128 (data1,feedback1);
+        data2 = _mm_xor_si128 (data2,feedback2);
+        data3 = _mm_xor_si128 (data3,feedback3);
+        data4 = _mm_xor_si128 (data4,feedback4);
+        
+        _mm_storeu_si128(&((__m128i*)out)[i*4+0],data1);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+1],data2);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+2],data3);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+3],data4);
+        feedback1=last_in1;
+        feedback2=last_in2;
+        feedback3=last_in3;
+        feedback4=last_in4;
+    }
+
+
+
+}
 
 aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
     //length here is padded size of block to encode, len is actual unpadded size of string input
@@ -1010,7 +1058,7 @@ aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
         total -= aesKeySize;
     
     }
-
+    //std::cerr<<"length:"<<length<<std::endl;
     char plainTextNew[length];
     for (unsigned int u=0; u<length;u++){
         plainTextNew[u]=0;
@@ -1038,16 +1086,16 @@ aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
     }
     if (mode=="CTR"){
         AES_CTR_encrypt(formattedNewPlainText,CIPHERTEXT,CTR128_IV,CTR128_NONCE,length,key.KEY,key.nr);
-
     }
     else if (mode=="CBC"){
         AES_CBC_encrypt(formattedNewPlainText,CIPHERTEXT,CBC_IV,length,key.KEY,key.nr);
-       
     }        
     else if (mode=="ECB"){
         AES_ECB_encrypt(formattedNewPlainText,CIPHERTEXT,length,(const char*)key.KEY,key.nr);
-
     }
+    /*else if (mode=="CBCP"){
+        AES_CBC_encrypt_parallelize_4_blocks(formattedNewPlainText,CIPHERTEXT,CBC_IV,CBC_IVb,CBC_IVc,CBC_IVd,length,key.KEY,key.nr);
+    } */   
     else{
         std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
         exit(1);
@@ -1074,6 +1122,9 @@ std::string* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
     else if (mode=="ECB"){
         AES_ECB_decrypt(input->data,( unsigned char *)DECRYPTEDTEXT, input->size, (const char*)decrypt_key.KEY, decrypt_key.nr);
     }
+    /*else if (mode=="CBCP"){
+        AES_CBC_decrypt_parallelize_4_blocks(input->data,( unsigned char *)DECRYPTEDTEXT,CBC_IV,CBC_IVb,CBC_IVc,CBC_IVd,input->size,key.KEY,key.nr);
+    } */
     else{
         std::cerr <<"Invalid mode for encrypt_AES (CTR,CBC,ECB)"<<std::endl;
         exit(1);

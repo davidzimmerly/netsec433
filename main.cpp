@@ -97,6 +97,20 @@ int main()
         delete block1;
     }
     std::cerr<<"/CBC";
+    /*
+    for(int stress=0; stress<stress_iterations; stress++){   
+        std::string* output;
+        std::string mode = "CBCP";
+        aesBlock* block1 = er2->encrypt_AES(plainText,mode);
+        output = er2->decrypt_AES(block1,mode);
+        er2->checkStringMatch(&plainText,output);
+        delete output;
+        delete[] block1->data;
+        delete block1;
+    }
+    std::cerr<<"/CBCP";*/ //doesn't work
+    
+
     for(int stress=0; stress<stress_iterations; stress++){
         std::string* output;
         std::string mode = "ECB";

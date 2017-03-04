@@ -93,7 +93,12 @@ class encrypt_ram{
         const uint8_t s8 [64] = { 13,  2,   8,  4,   6, 15,  11,  1,  10,  9,   3, 14,   5,  0,  12,  7,        1, 15,  13,  8,  10,  3,   7, 4,  12,  5,   6, 11,   0, 14 ,  9, 2,        7, 11,   4,  1,   9, 12,  14,  2,   0,  6,  10, 13,  15,  3,   5,  8,        2,  1,  14,  7,   4, 10,   8, 13,  15, 12,   9,  0,   3,  5,   6, 11};
         const uint8_t p [32] = { 16,   7,  20,  21, 29,  12,  28,  17, 1,  15,  23,  26,5,  18,  31,  10, 2,   8,  24,  14, 32,  27,   3,   9, 19,  13,  30,   6, 22,  11,   4,  25,};
         const uint8_t ipInverse [64] = {40,     8,   48,    16,    56,   24,    64,   32,        39,     7,   47,    15,    55,   23,    63,   31,38,     6,   46,    14,    54,   22,    62,   30,37,     5,   45,    13,    53,   21,    61,   29,36,     4,   44,    12,    52,   20,    60,   28,35,     3,   43,    11,    51,   19,    59,   27,34,     2,   42,    10,    50,   18,    58,   26,33,     1,   41,     9,    49,   17,    57,   25};
-        ALIGN16 uint8_t CBC_IV[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
+        ALIGN16 uint8_t CBC_IV[16] = {0x00,0x4c,0x02,0x33,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
+        ALIGN16 uint8_t CBC_IVb[16] = {0x0a,0xae,0x12,0x76,0xa4,0xd5,0xa6,0xf7,0xd8,0xa9,0x1a,0x8b,0x4c,0x3d,0x1e,0x3f};
+        ALIGN16 uint8_t CBC_IVc[16] = {0x0d,0x24,0x22,0x36,0xb4,0xe5,0xb6,0xe7,0xe8,0xd9,0x2a,0x7b,0x5c,0x2d,0x2e,0x2f};
+        ALIGN16 uint8_t CBC_IVd[16] = {0x0f,0x65,0x32,0x35,0xc4,0xf5,0xc6,0xd7,0xf8,0xf9,0x3a,0x6b,0x6c,0x1d,0x3e,0x1f};
+
+
         ALIGN16 uint8_t CTR128_IV[8] = {0xC0,0x54,0x3B,0x59,0xDA,0x48,0xD9,0x0B};
         ALIGN16 uint8_t CTR128_NONCE[4] = {0x00,0x6C,0xB6,0xDB};
         void AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
@@ -106,12 +111,12 @@ class encrypt_ram{
         void AES_256_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
         void AES_CBC_encrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
         void AES_CBC_decrypt(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,unsigned char *key,int number_of_rounds);
-        void AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],
-        const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds);
+        void AES_CTR_encrypt (const unsigned char *in,unsigned char *out,const unsigned char ivec[8],const unsigned char nonce[4],unsigned long length,const unsigned char *key,int number_of_rounds);
         void print_m128i_with_string_short(char* string,__m128i data,int length);
         int AES_set_encrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         int AES_set_decrypt_key (const unsigned char *userKey,const int bits,AES_KEY *key);
         void AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
+        void AES_CBC_decrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr);
         void desEncryptSingleBlock(unsigned long long & message,uint8_t key);
         void desDecryptSingleBlock(unsigned long long & message,uint8_t key);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
@@ -127,6 +132,7 @@ class encrypt_ram{
         int* secureRequest(std::string elements, std::string& apiKey);
         void checkDESkeyChoice(uint8_t key);
         void checkDESMode(std::string mode);
+
         
     public:
         encrypt_ram();

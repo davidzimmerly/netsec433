@@ -43,7 +43,14 @@ encrypt_ram::encrypt_ram(){
         K2[j]=NULL;
         K3[j]=NULL;
     }
-    
+        
+    //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
+    std::ifstream file("config.txt"); //not included in repo, first line should be your randomAPI key
+    if (!std::getline(file, rk)){
+        std::cerr << "cannot find configuration file values in config.txt" <<std::endl;
+        exit(1);
+    }
+    file.close();
     
 }
 
@@ -811,29 +818,15 @@ void encrypt_ram::setAESKey(int size){
         delete[] aesKey;
     aesKeySize = size;
     aesKey = new ALIGN16 uint8_t[keys];
-    std::string address = "https://www.random.org/cgi-bin/randbyte?nbytes="+std::to_string(keys)+"%26format=h";
-    resultString = encrypt_ram::call_curl(address.c_str(),"NONE");
-    //note this is extremely format sensitive string manipulation..probably need to change for modularization
-    for (unsigned int string_pos=0; string_pos<resultString.length()-1; string_pos+=3){
-        char a = resultString[string_pos];
-        char b = resultString[string_pos+1];
-        int ai=0,bi=0;
-        if (((a=='\n'))||(((a>=97 && a<=102)||(a>=48 && a<=57))&&((b>=97 && b<=102)||(b>=48 && b<=57)))){//97-102 == a-f 48-57 == 0-9
-            if (a=='\n'){
-                string_pos++;
-                a = resultString[string_pos];
-                b = resultString[string_pos+1];
-            }
-            ai = (a>57)?a-87:a-48;
-            bi = (b>57)?b-87:b-48;
-        }
-        else 
-        {
-            std::cerr <<"Invalid Input "", exiting."<<std::endl;
-            exit(1);
-        }
-        aesKey[string_pos/3] = ai*16 + bi;
+    int* results=secureRequest(std::to_string(keys),rk);
+    for(int k=0;k<keys;k++){
+        aesKey[k]=results[k];
     }
+    for (int i=0; i<10; i++){
+        results[i]=0;
+    }
+    delete[] results;
+    
     AES_set_encrypt_key(aesKey, size, &key);
     AES_set_decrypt_key(aesKey, size, &decrypt_key);
 }
@@ -940,7 +933,24 @@ size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 unsigned long long* encrypt_ram::getNewLL(){
-    return encrypt_ram::nstring_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
+    int* results=secureRequest("6",rk);
+    unsigned long long* returnMe = new unsigned long long;
+    *returnMe=0;
+    int position=15;
+    for(int k=0;k<6;k++){
+        *returnMe += results[k]*pow(10,position);
+        position-=3;
+    }
+    for (int i=0; i<6; i++){
+        results[i]=0;
+    }
+    delete[] results;
+    return returnMe;
+
+
+
+
+//    return encrypt_ram::nstring_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
 }
 
 void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],

@@ -120,21 +120,22 @@ class encrypt_ram{
         ALIGN16 uint8_t* aesKey;
         int aesKeySize;
         static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
-                
+        std::string rk;//random.api key        
+        std::string call_curl(std::string address, std::string arguments);
+        void removeCharFromString(char c,std::string &str);
+        int Check_CPU_support_AES();
+        int* secureRequest(std::string elements, std::string& apiKey);
+        void checkDESkeyChoice(uint8_t key);
+        void checkDESMode(std::string mode);
         
     public:
         encrypt_ram();
         ~encrypt_ram();
-        int Check_CPU_support_AES();
         bool anyKey();
-        int* secureRequest(std::string elements, std::string& apiKey);
-        std::string call_curl(std::string address, std::string arguments);
         std::string string_to_nstring(std::string &input);
         unsigned long long* nstring_to_ull(std::string input);
         std::string ull_to_string(unsigned long long &input);
-        
         void checkStringMatch(std::string* string1,  std::string* string2);
-        void removeCharFromString(char c,std::string &str);
         //simple XOR encrypt with key (key should be as long as input, ensure key size on update)
         /*void encrypt(std::string &message){for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }        }
         void decrypt(std::string &message){encrypt(message);}*/ 
@@ -149,6 +150,4 @@ class encrypt_ram{
         void setDESKey();
         desBlock* encrypt_DES(std::string &input,std::string mode);
         void decrypt_DES(desBlock* input,std::string mode);
-        void checkDESMode(std::string mode);
-        void checkDESkeyChoice(uint8_t key);
 };

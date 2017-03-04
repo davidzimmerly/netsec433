@@ -1,23 +1,12 @@
 #include "encrypt_ram_rsa.h"
 #include "encrypt_ram.h"
-//i should start/change all the longs to ints for consistency for other than windows platforms ( since my longs need to be 32 bit) -dz
 
 int main()
 {
     int stress_iterations=1;
     unsigned int key_length = 256;
     
-    //configuration options (for json test) 
-    /***********************************************************************************************************/
-    //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
-    std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
-    std::string rk;
-    if (!std::getline(file, rk)){
-        std::cerr << "cannot find configuration file values in config.txt" <<std::endl;
-        exit(1);
-    }
-    file.close();
-    /***********************************************************************************************************/
+
 
     encrypt_ram* er = new encrypt_ram();
     er->setDESKey();
@@ -80,14 +69,6 @@ int main()
     encrypt_ram* er2; 
     er2 = new encrypt_ram();
         
-    /**JSON TEST with authenticity/integrity check**************************************************************/    
-    int* result = er2->secureRequest("10",rk);
-    
-    for (int i=0; i<10; i++){
-        result[i]=0;
-    }
-    delete[] result;
-    /***********************************************************************************************************/
 
     //aes new key / new text example:***************************************************************************/
     

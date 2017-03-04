@@ -114,6 +114,7 @@ class encrypt_ram{
         void desEncryptSingleBlock(unsigned long long & message,uint8_t key);
         void desDecryptSingleBlock(unsigned long long & message,uint8_t key);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
+        unsigned long long* getNewLL();
         AES_KEY key, decrypt_key;
         ALIGN16 uint8_t* aesKey;
         int aesKeySize;
@@ -129,7 +130,7 @@ class encrypt_ram{
         std::string string_to_nstring(std::string &input);
         unsigned long long* nstring_to_ull(std::string input);
         std::string ull_to_string(unsigned long long &input);
-        unsigned long long* getNewLL();
+        
         void checkStringMatch(std::string* string1,  std::string* string2);
         
         //simple XOR encrypt with key (key should be as long as input, ensure key size on update)

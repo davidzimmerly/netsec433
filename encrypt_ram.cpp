@@ -1,6 +1,5 @@
 #include "encrypt_ram.h"
 unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* key){
-
     unsigned long long* e;
     e = permuteEbit(*data);
     unsigned long long xorOp;
@@ -904,7 +903,7 @@ std::string encrypt_ram::call_curl(std::string address, std::string arguments){
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         if (arguments!="NONE"){
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, arguments.c_str());
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, sizeof(arguments.c_str()));
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, arguments.length());
 
         }
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, encrypt_ram::WriteCallback);

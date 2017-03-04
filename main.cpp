@@ -10,17 +10,17 @@ int main()
     //configuration options (for json test) 
     /***********************************************************************************************************/
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
-    /*std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
+    std::ifstream file("config.txt"); //not included in repo currently, first line should be randomAPI key
     std::string rk;
     if (!std::getline(file, rk)){
         std::cerr << "cannot find configuration file values in config.txt" <<std::endl;
         exit(1);
     }
-    file.close();*/
+    file.close();
     /***********************************************************************************************************/
 
-    encrypt_ram* er = new encrypt_ram();
-    er->setDESKey();
+ //   encrypt_ram* er = new encrypt_ram();
+ //   er->setDESKey();
     //initial  memory search hex editor demo:*/
     /*
     bool done = false;
@@ -45,7 +45,7 @@ int main()
     }*/
     
 
-    unsigned long long* testMessage = new unsigned long long;
+   /* unsigned long long* testMessage = new unsigned long long;
     *testMessage = 81985529216486895;
     //er->desEncryptSingleBlock(*testMessage);
     //std::cerr <<"Test Message= "<< *testMessage << std::endl;
@@ -74,12 +74,12 @@ int main()
     delete newBlock;
     *temp=0;
     delete temp;
-    delete er;
+    delete er;*/
         
 
 
-//    encrypt_ram* er2; 
-//    er2 = new encrypt_ram();
+    encrypt_ram* er2; 
+    er2 = new encrypt_ram();
     
 /***********************************************************************************************************/    
 
@@ -90,9 +90,39 @@ int main()
 
 /***********************************************************************************************************/    
     //json request example:
-    /*std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
-    std::string resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
-    std::cerr << resultString << std::endl;*/
+    //std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
+    //std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
+    std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateSignedIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":0,\"max\":255,\"replacement\":true,\"base\":16},\"id\":13527}";
+    std::string resultString;
+    //std::cerr << jsonArguments << std::endl;
+    resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    if(resultString.find("error")!= string::npos){
+        std::cerr << "ERROR in Random API result, exiting." << std::endl;    
+        exit(1);
+    }
+    std::string signature="";// = resultString.substr();
+    std::string random="";
+    int randomStartPosition = resultString.find("random")+8;
+    int signatureStartPosition = resultString.find("signature")+12;
+    if(resultString.find("random")!= string::npos){
+        int length = resultString.find("}")-randomStartPosition+1;
+        random = resultString.substr(randomStartPosition,length);
+    }
+    if(resultString.find("signature")!= string::npos){
+        int length = resultString.find("\"",signatureStartPosition)-signatureStartPosition;
+        signature = resultString.substr(signatureStartPosition,length);
+    }
+    //std::cerr << signature << std::endl<<std::endl<<std::endl;
+    jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"verifySignature\",\"params\":{\"random\":"+random+",\"signature\":\""+signature+"\"},\"id\":198633}";
+    //std::cerr << random << std::endl<< std::endl<< std::endl;
+    //std::cerr << jsonArguments << std::endl;
+    resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    if(resultString.find("true")== string::npos){
+        std::cerr<<"Authenticity or Integrity of RandomAPI data not verified, exiting."<<std::endl;
+        exit(1);
+    }
+     
+    std::cerr << resultString << std::endl;
 /***********************************************************************************************************/
 
     //aes new key / new text example:
@@ -198,11 +228,11 @@ int main()
 	}*/
 	
 	//delete des_key2;
-    *testMessage=0;
+ /*   *testMessage=0;
     delete testMessage;
     
-    //delete[] formattedNewPlainText;
-    //delete er2;
+    //delete[] formattedNewPlainText;*/
+    delete er2;
     return 0;
 }
 

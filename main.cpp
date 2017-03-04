@@ -4,8 +4,8 @@
 
 int main()
 {
-    //int stress_iterations=1;
-    //unsigned int key_length = 256;
+    int stress_iterations=1;
+    unsigned int key_length = 256;
     
     //configuration options (for json test) 
     /***********************************************************************************************************/
@@ -19,9 +19,9 @@ int main()
     file.close();
     /***********************************************************************************************************/
 
- //   encrypt_ram* er = new encrypt_ram();
- //   er->setDESKey();
-    //initial  memory search hex editor demo:*/
+    encrypt_ram* er = new encrypt_ram();
+    er->setDESKey();
+    /**initial  memory search hex editor demo************************************************************************************/
     /*
     bool done = false;
     while(!done){
@@ -43,94 +43,57 @@ int main()
             done = er->anyKey();
         }
     }*/
-    
+    /***********************************************************************************************************/
 
-   /* unsigned long long* testMessage = new unsigned long long;
-    *testMessage = 81985529216486895;
-    //er->desEncryptSingleBlock(*testMessage);
-    //std::cerr <<"Test Message= "<< *testMessage << std::endl;
-    //er->desDecrypt(*testMessage);
-    //std::cerr <<"Test Message= "<< *testMessage << std::endl;
+
+    /*DES TEST*******************************************************************************************************/
+
     std::string convertMe = "davidzssdjkfhldskjfhlksdjhfldskjhfldksjhfklsdjhfjkdhfkdjfdmknbf,dmnbfdm,nbzzz";
     std::string convertedString= er->string_to_nstring(convertMe);
     unsigned long long* temp = er->nstring_to_ull(convertedString);
     
-    //er->desEncryptSingleBlock(*temp);
-    //std::cerr <<"Test Message convert = "<< *temp << std::endl;
-    //er->desDecryptSingleBlock(*temp);
-    //std::cerr <<"Test Message convert = "<< *temp << std::endl;
-    
     desBlock * newBlock = er->encrypt_DES(convertMe,"triple");    
     std::string output="";
-    er->decrypt_DES(newBlock,"triple");
+    std::string desMode="triple";
+    er->decrypt_DES(newBlock,desMode);
     
     for (int x = 0; x<newBlock->size; x++){
         output+=er->ull_to_string(newBlock->data[x]);
         newBlock->data[x]=0;
     }
-    std::cerr<<"decrypted output:"<<output<<std::endl;
-
+    //std::cerr<<"decrypted output:"<<output<<std::endl;
+    for (unsigned int x=0; x<convertMe.length(); x++)
+        if (output[x]!=convertMe[x]){
+            std::cerr<<"DES check failure in mode: "<<desMode<<".  Exiting Program."<<std::endl;
+        }
+            
+    std::cerr<<"DES Mode: "<<desMode<<" TEST OK"<<std::endl;
     delete[] newBlock->data;
     delete newBlock;
     *temp=0;
     delete temp;
-    delete er;*/
+    delete er;
+    /***********************************************************************************************************/
         
 
 
     encrypt_ram* er2; 
     er2 = new encrypt_ram();
+        
+    /**JSON TEST with authenticity/integrity check**************************************************************/    
+    int* result = er2->secureRequest("10",rk);
     
-/***********************************************************************************************************/    
-
-    //unsigned long long* des_key2;//=new unsigned long long;//need to retest this, changed to ptr
-    //des_key2 = er2->getNewLL();  //think bug is here 
-    //std::cerr <<"new key: "<<*des_key2<<std::endl;
-
-
-/***********************************************************************************************************/    
-    //json request example:
-    //std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
-    //std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":1,\"max\":10,\"replacement\":true,\"base\":16},\"id\":13527}";
-    std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateSignedIntegers\",\"params\":{\"apiKey\":\""+rk+"\",\"n\":10,\"min\":0,\"max\":255,\"replacement\":true,\"base\":16},\"id\":13527}";
-    std::string resultString;
-    //std::cerr << jsonArguments << std::endl;
-    resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
-    if(resultString.find("error")!= string::npos){
-        std::cerr << "ERROR in Random API result, exiting." << std::endl;    
-        exit(1);
+    for (int i=0; i<10; i++){
+        result[i]=0;
     }
-    std::string signature="";// = resultString.substr();
-    std::string random="";
-    int randomStartPosition = resultString.find("random")+8;
-    int signatureStartPosition = resultString.find("signature")+12;
-    if(resultString.find("random")!= string::npos){
-        int length = resultString.find("}")-randomStartPosition+1;
-        random = resultString.substr(randomStartPosition,length);
-    }
-    if(resultString.find("signature")!= string::npos){
-        int length = resultString.find("\"",signatureStartPosition)-signatureStartPosition;
-        signature = resultString.substr(signatureStartPosition,length);
-    }
-    //std::cerr << signature << std::endl<<std::endl<<std::endl;
-    jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"verifySignature\",\"params\":{\"random\":"+random+",\"signature\":\""+signature+"\"},\"id\":198633}";
-    //std::cerr << random << std::endl<< std::endl<< std::endl;
-    //std::cerr << jsonArguments << std::endl;
-    resultString = er2->call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
-    if(resultString.find("true")== string::npos){
-        std::cerr<<"Authenticity or Integrity of RandomAPI data not verified, exiting."<<std::endl;
-        exit(1);
-    }
-     
-    std::cerr << resultString << std::endl;
-/***********************************************************************************************************/
+    delete[] result;
+    /***********************************************************************************************************/
 
-    //aes new key / new text example:
+    //aes new key / new text example:***************************************************************************/
     
-  /*  std::string plainText="837648asdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahasdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
+    std::string plainText="837648asdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahasdtommytdsdskjtommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsahlfdskajhfldskjhatommytdsdskjhflsakdjhflkdsjhflkasdjhfklsadjhfdslakjhfdslkjhfldkjhfldksjahfldskjfhasldkjfhdslkjsafdhflkjdshlfkjdsah";
     er2->setAESKey(key_length);
     std::cerr<<"testing "<<key_length<<"-bit key..";
-    //need to change #DEFINE for test as well as key size and LENGTH =thisx2
     for(int stress=0; stress<stress_iterations; stress++){
         std::string* output;
         std::string mode = "CTR";
@@ -165,9 +128,10 @@ int main()
     }
     
     std::cerr<<"/ECB...OK"<<std::endl;
+    /***********************************************************************************************************/    
     
-    */
-	/*
+	/**RSA******************************************************************************************************/
+    /*
 	// RSA - Because this takes an inordinate amount of time to run,
 	// it asks the user if they'd like to opt out
 	std::string answer = "";
@@ -226,13 +190,8 @@ int main()
 		rsa->decryptPIN();
         delete rsa;
 	}*/
-	
-	//delete des_key2;
- /*   *testMessage=0;
-    delete testMessage;
-    
-    //delete[] formattedNewPlainText;*/
+	/***********************************************************************************************************/
+   
     delete er2;
     return 0;
 }
-

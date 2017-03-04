@@ -7,6 +7,7 @@
 #include <emmintrin.h>
 #include <curl/curl.h>//for network access
 #include <fstream>//std::ifstream,file i/o
+#include <sstream>
 
 #if !defined (ALIGN16)
 # if defined (__GNUC__)
@@ -126,13 +127,14 @@ class encrypt_ram{
         ~encrypt_ram();
         int Check_CPU_support_AES();
         bool anyKey();
+        int* secureRequest(std::string elements, std::string& apiKey);
         std::string call_curl(std::string address, std::string arguments);
         std::string string_to_nstring(std::string &input);
         unsigned long long* nstring_to_ull(std::string input);
         std::string ull_to_string(unsigned long long &input);
         
         void checkStringMatch(std::string* string1,  std::string* string2);
-        
+        void removeCharFromString(char c,std::string &str);
         //simple XOR encrypt with key (key should be as long as input, ensure key size on update)
         /*void encrypt(std::string &message){for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }        }
         void decrypt(std::string &message){encrypt(message);}*/ 

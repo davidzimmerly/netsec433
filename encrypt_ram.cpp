@@ -1081,3 +1081,63 @@ void encrypt_ram::checkStringMatch( std::string* string1,  std::string* string2)
         }
     //}
 }
+
+int* encrypt_ram::secureRequest(std::string elements, std::string& apiKey){
+    std::string* returnMe = new std::string;
+    std::string jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"generateSignedIntegers\",\"params\":{\"apiKey\":\""+apiKey+"\",\"n\":"+elements+",\"min\":0,\"max\":255,\"replacement\":true,\"base\":10},\"id\":13527}";
+    std::string resultString;
+    resultString = call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    if(resultString.find("error")!= std::string::npos){
+        std::cerr << "ERROR in Random API result, exiting." << std::endl;    
+        exit(1);
+    }
+    std::string signature="";
+    std::string random="";
+    int randomStartPosition = resultString.find("random")+8;
+    int signatureStartPosition = resultString.find("signature")+12;
+    if(resultString.find("random")!= std::string::npos){
+        int length = resultString.find("}")-randomStartPosition+1;
+        random = resultString.substr(randomStartPosition,length);
+    }
+    if(resultString.find("signature")!= std::string::npos){
+        int length = resultString.find("\"",signatureStartPosition)-signatureStartPosition;
+        signature = resultString.substr(signatureStartPosition,length);
+    }
+    jsonArguments="{\"jsonrpc\":\"2.0\",\"method\":\"verifySignature\",\"params\":{\"random\":"+random+",\"signature\":\""+signature+"\"},\"id\":198633}";
+    int returnMeStart = resultString.find("[")+1;
+
+    if(resultString.find("[")!= std::string::npos){
+        int length = resultString.find("]")-returnMeStart;
+        *returnMe = resultString.substr(returnMeStart,length);
+    }
+    
+    resultString = call_curl("https://api.random.org/json-rpc/1/invoke", jsonArguments);
+    if(resultString.find("true")== std::string::npos){
+        std::cerr<<"Authenticity or Integrity of RandomAPI data not verified, exiting."<<std::endl;
+        exit(1);
+    }
+    std::stringstream ss( *returnMe);
+    std::string::size_type sz;  
+    int* results;
+    results = new int[std::stoi (elements,&sz)];
+    uint8_t i = 0;
+    while( ss.good() )
+    {
+        std::string substr;
+        getline( ss, substr, ',' );
+        results[i++]= std::stoi (substr,&sz);
+    }    
+    ss.flush();
+    resultString = jsonArguments = random = signature="";
+    *returnMe="";
+    delete returnMe;
+    return results;
+}
+
+void encrypt_ram::removeCharFromString(char c,std::string &str){
+    for(unsigned int i=0; i<str.length(); i++)
+        if(str[i] == c){
+            str.erase(i,1);
+            i=0;    
+        }
+}

@@ -851,9 +851,11 @@ std::string encrypt_ram::string_to_nstring(std::string &input){//wrapper for sto
     for (uint8_t f=0; f<6; f++){//can fit 18x3 digit combos inside 64 bit long long
         if (f<input.length()){
             std::string addMe= std::to_string((int)input[f]);
-            if (addMe.length()<2)
-                addMe.insert(0,"00");
-            else if (addMe.length()<3)
+            if (f>0 && addMe.length()<2){
+                addMe.insert(0,"0");
+                addMe.insert(0,"0");
+            }
+            else if (f>0 && addMe.length()<3)
                 addMe.insert(0,"0");
             convertedString+=addMe;
         }
@@ -863,7 +865,6 @@ std::string encrypt_ram::string_to_nstring(std::string &input){//wrapper for sto
 
     }
     return convertedString;
-    
 }
 
 std::string encrypt_ram::ull_to_string(unsigned long long &input){
@@ -927,8 +928,7 @@ bool encrypt_ram::anyKey(){
     }
 }
 
-size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
+size_t encrypt_ram::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp){
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
@@ -996,9 +996,108 @@ void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,u
     }
 }
 
+void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,const unsigned char *key,int nr){
+    //INTEL CODE
+    /*__m128i feedback1,feedback2,feedback3,feedback4;
+    __m128i data1,data2,data3,data4,last_in;
+    unsigned int i;
+    int j;
+    feedback1=_mm_loadu_si128((__m128i*)ivec);
+    for(i=0; i < length/16/4; i++){
+        data1 = _mm_loadu_si128 (&((__m128i*)in)[i*4+0]);
+        data2 = _mm_loadu_si128 (&((__m128i*)in)[i*4+1]);
+        data3 = _mm_loadu_si128 (&((__m128i*)in)[i*4+2]);
+        data4 = _mm_loadu_si128 (&((__m128i*)in)[i*4+3]);
+        
+        feedback2 = data1;
+        feedback3 = data2;
+        feedback4 = data3;
+        last_in = data4;
+        feedback1 = _mm_xor_si128 (feedback1,((__m128i*)key)[0]);
+        feedback2 = _mm_xor_si128 (feedback2,((__m128i*)key)[0]);
+        feedback3 = _mm_xor_si128 (feedback3,((__m128i*)key)[0]);
+        feedback4 = _mm_xor_si128 (feedback4,((__m128i*)key)[0]);
+        for(j=1; j <nr;j++){
+            feedback1 = _mm_aesenc_si128 (feedback1,((__m128i*)key)[j]);
+            feedback2 = _mm_aesenc_si128 (feedback2,((__m128i*)key)[j]);
+            feedback3 = _mm_aesenc_si128 (feedback3,((__m128i*)key)[j]);
+            feedback4 = _mm_aesenc_si128 (feedback4,((__m128i*)key)[j]);
+        }
+        feedback1 = _mm_aesenclast_si128 (feedback1,((__m128i*)key)[j]);
+        feedback2 = _mm_aesenclast_si128 (feedback2,((__m128i*)key)[j]);
+        feedback3 = _mm_aesenclast_si128 (feedback3,((__m128i*)key)[j]);
+        feedback4 = _mm_aesenclast_si128 (feedback4,((__m128i*)key)[j]);
 
 
+        _mm_storeu_si128(&((__m128i*)out)[i*4+0],feedback1);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+1],feedback2);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+2],feedback3);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+3],feedback4);
+    }*/
+}
+void encrypt_ram::AES_CBC_decrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr){
+    /*__m128i feedback1,feedback2,feedback3,feedback4,last_in;
+    __m128i data1,data2,data3,data4;
+    unsigned int i;
+    int j;
+    if (length%16) 
+        length = length/16 + 1; 
+    else length/=16; 
+    feedback1=_mm_loadu_si128((__m128i*)ivec);
+    for(i=0; i < length/4; i++){
+        data1=_mm_loadu_si128 (&((__m128i*)in)[i*4+0]);
+        data2=_mm_loadu_si128 (&((__m128i*)in)[i*4+1]);
+        data3=_mm_loadu_si128 (&((__m128i*)in)[i*4+2]);
+        data4=_mm_loadu_si128 (&((__m128i*)in)[i*4+3]);
+        
+        feedback2 = data1;
+        feedback3 = data2;
+        feedback4 = data3;
+        last_in = data4;
+        data1 = _mm_xor_si128 (data1,((__m128i*)key)[0]);
+        data2 = _mm_xor_si128 (data2,((__m128i*)key)[0]);
+        data3 = _mm_xor_si128 (data3,((__m128i*)key)[0]);
+        data4 = _mm_xor_si128 (data4,((__m128i*)key)[0]);
+        for(j=1; j <nr;j++){
+            data1 = _mm_aesdec_si128 (data1,((__m128i*)key)[j]);
+            data2 = _mm_aesdec_si128 (data2,((__m128i*)key)[j]);
+            data3 = _mm_aesdec_si128 (data3,((__m128i*)key)[j]);
+            data4 = _mm_aesdec_si128 (data4,((__m128i*)key)[j]);
+            
+        }
+        data1 = _mm_aesdeclast_si128 (data1,((__m128i*)key)[j]);
+        data2 = _mm_aesdeclast_si128 (data2,((__m128i*)key)[j]);
+        data3 = _mm_aesdeclast_si128 (data3,((__m128i*)key)[j]);
+        data4 = _mm_aesdeclast_si128 (data4,((__m128i*)key)[j]);
+        
+        data1 = _mm_xor_si128 (data1,feedback1);
+        data2 = _mm_xor_si128 (data2,feedback2);
+        data3 = _mm_xor_si128 (data3,feedback3);
+        data4 = _mm_xor_si128 (data4,feedback4);
+        
+        _mm_storeu_si128(&((__m128i*)out)[i*4+0],data1);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+1],data2);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+2],data3);
+        _mm_storeu_si128(&((__m128i*)out)[i*4+3],data4);
+        feedback1=last_in;
+        
+    }
+    unsigned int j2=j;
+    for(j2=i*4; j2 < length; j2++){ 
+        data1=_mm_loadu_si128 (&((__m128i*)in)[j2]); 
+        last_in=data1; 
+        data1 = _mm_xor_si128 (data1,((__m128i*)key)[0]);    
+        for(uint8_t i=1; i < nr; i++){ 
+            data1 = _mm_aesdec_si128 (data1,((__m128i*)key)[i]); 
+        } 
+        data1 = _mm_aesdeclast_si128 (data1,((__m128i*)key)[i]); 
+        data1 = _mm_xor_si128 (data1,feedback1); 
+        _mm_storeu_si128 (&((__m128i*)out)[j2],data1); 
+        feedback1=last_in; 
+         
+    } */
 
+}
 void encrypt_ram::AES_CBC_decrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec[16],unsigned long length,const unsigned char *key,int nr){
     //INTEL CODE
     __m128i feedback1,feedback2,feedback3,feedback4,last_in;

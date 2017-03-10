@@ -36,10 +36,11 @@ int main()
 
 
     /*DES TEST*******************************************************************************************************/
-    //found bug:numerical data breaks stuff
-    std::string convertMe = "davidzssdjkfhldskjfhlksdjhfldskjhfldksjhfklsdjhfjz";
-    std::string convertedString= er->string_to_nstring(convertMe);
-    unsigned long long* temp = er->nstring_to_ull(convertedString);
+    //
+    std::string convertMe = "1da1438d75a89c437659384756934875693487563987653498765439876";
+    //std::string convertedString= er->string_to_nstring(convertMe);
+    //std::cerr << "convertedString="<<convertedString<<std::endl;
+    //unsigned long long* temp = er->nstring_to_ull(convertedString);
     
     desBlock * newBlock = er->encrypt_DES(convertMe,"triple");    
     std::string output="";
@@ -60,8 +61,8 @@ int main()
     std::cerr<<"DES Mode: "<<desMode<<" TEST OK"<<std::endl;
     delete[] newBlock->data;
     delete newBlock;
-    *temp=0;
-    delete temp;
+    //*temp=0;
+    //delete temp;
     delete er;
     /***********************************************************************************************************/
         

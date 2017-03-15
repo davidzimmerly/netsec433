@@ -124,14 +124,13 @@ int main()
     std::cerr<<"/ECB...OK"<<std::endl;
     /***********************************************************************************************************/    
     
-	/**RSA******************************************************************************************************/
+    /**RSA******************************************************************************************************/
     /*
-	// RSA - Because this takes an inordinate amount of time to run,
-	// it asks the user if they'd like to opt out
+		// RSA Encryption
 	std::string answer = "";
 	bool rsa_true = false;
 	while(true){
-		std::cerr << "\nAttempt RSA encryption? (May take a while) Y/N ";
+		std::cerr << "\nRSA Encryption? (Y/N) ";
 		std::cin >> answer;
 		if (answer == "n" || answer == "no" || answer == "No" || answer == "N"){
 			std::cerr << "No RSA encryption then..." << std::endl;
@@ -143,7 +142,6 @@ int main()
 		}
 		std::cerr << "Not a valid choice - try again" << std::endl;
 	}
-
 	if (rsa_true){
 		encrypt_ram_rsa * rsa = new encrypt_ram_rsa;
 		
@@ -151,38 +149,37 @@ int main()
 		
 		// Gets string and int from user
 		while (true) {
-			std::cerr << "Enter your name: ";
-			std::cin >> rsa->name;
+			std::cerr << "Enter a string: ";
+			std::cin >> rsa->strin;
 			
-			std::cerr << "Enter your PIN: ";
-			std::cin >> rsa->pin;
-
-			std::cerr << std::endl;
-			std::cerr << "First name: " << rsa->name << " at " << &rsa->name << std::endl;
-			std::cerr << "PIN: " << rsa->pin << " at " << &rsa->pin << std::endl;
+			std::cerr << "Unencrypted string: " << rsa->strin << " at " << &rsa->strin << std::endl;
 
 			break;
 		}
 		
-		rsa->generateValues();
+		while (true){
+			rsa->generateValues();
+			
+			// Debug values
+			
+			std::cerr << "\nName: " << rsa->strin << std::endl;
+			std::cerr << "\nPrime 1: " << rsa->p << std::endl;
+			std::cerr << "Prime 2: " << rsa->q << std::endl;
+			std::cerr << "N: " << rsa->n << std::endl;
+			std::cerr << "Totient: " << rsa->totient << std::endl;
+			std::cerr << "E: " << rsa->e << std::endl;
+			std::cerr << "D: " << rsa->d << std::endl;
+			
+			
+			rsa->encryptString();
+			if (rsa->decryptString() == 1)
+				break;
+		}
 		
-		std::cerr << "\nPrime 1: " << rsa->p << std::endl;
-		std::cerr << "Prime 2: " << rsa->q << std::endl;
-		std::cerr << "N: " << rsa->n << std::endl;
-		std::cerr << "Totient: " << rsa->totient << std::endl;
-		std::cerr << "E: " << rsa->e << std::endl;
-		std::cerr << "D: " << rsa->d << std::endl;
+		rsa->eraseStrings();
 		
-		std::cerr << "\nEncrypting name (this will take a while)..." << std::endl;
-		
-		rsa->encryptString();
-		rsa->decryptString();
-		
-		std::cerr << "Encrypting PIN (this will take a while)..." << std::endl;
-		
-		rsa->encryptPIN();
-		rsa->decryptPIN();
         delete rsa;
+
 	}*/
 	/***********************************************************************************************************/
    

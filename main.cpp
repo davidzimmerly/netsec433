@@ -126,7 +126,7 @@ int main()
     
     /**RSA******************************************************************************************************/
     /*
-		// RSA Encryption
+	// RSA Encryption
 	std::string answer = "";
 	bool rsa_true = false;
 	while(true){
@@ -153,7 +153,8 @@ int main()
 			std::cin >> rsa->strin;
 			
 			std::cerr << "Unencrypted string: " << rsa->strin << " at " << &rsa->strin << std::endl;
-
+			std::cerr.flush();
+			
 			break;
 		}
 		
@@ -170,15 +171,17 @@ int main()
 			std::cerr << "E: " << rsa->e << std::endl;
 			std::cerr << "D: " << rsa->d << std::endl;
 			
-			
-			rsa->encryptString();
-			if (rsa->decryptString() == 1)
+			if (rsa->testValues() == 1){
+				rsa->encryptString();
+				rsa->decryptString();
 				break;
+			}
 		}
-		
-		rsa->eraseStrings();
-		
+				
         delete rsa;
+		
+		while(true){
+		}
 
 	}*/
 	/***********************************************************************************************************/

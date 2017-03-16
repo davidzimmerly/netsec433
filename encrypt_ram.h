@@ -134,7 +134,7 @@ class encrypt_ram{
         int* secureRequest(std::string elements, std::string& apiKey);
         void checkDESkeyChoice(uint8_t key);
         void checkDESMode(std::string mode);
-
+        bool curlOn;
         
     public:
         encrypt_ram();
@@ -145,8 +145,9 @@ class encrypt_ram{
         std::string ull_to_string(unsigned long long &input);
         void checkStringMatch(std::string* string1,  std::string* string2);
         //simple XOR encrypt with key (key should be as long as input, ensure key size on update)
-        /*void encrypt(std::string &message){for (uint x = 0; x < message.size(); x++) { message[x] ^= key[x]; }        }
-        void decrypt(std::string &message){encrypt(message);}*/ 
+        std::string keyC = "12345";
+        void encrypt(std::string &message){for (unsigned int x = 0; x < message.size(); x++) { message[x] ^= keyC[x]; }        }
+        void decrypt(std::string &message){encrypt(message);} 
 
         //AES//
         void setAESKey(int size);

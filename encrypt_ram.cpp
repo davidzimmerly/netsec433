@@ -43,7 +43,8 @@ encrypt_ram::encrypt_ram(){
         K2[j]=NULL;
         K3[j]=NULL;
     }
-        
+    curlOn = false;//true; //toggles random api usage, need to hard code values in set key if set to false(there is default)
+    
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
     std::ifstream file("config.txt"); //not included in repo, first line should be your randomAPI key
     if (!std::getline(file, rk)){
@@ -58,9 +59,23 @@ void encrypt_ram::setDESKey(){
 //begin init
     aesKey=NULL;
     aesKeySize = 0;
-    unsigned long long* key=getNewLL();
-    unsigned long long* key2=getNewLL();
-    unsigned long long* key3=getNewLL();
+    unsigned long long* key;
+    unsigned long long* key2;
+    unsigned long long* key3;
+    if (curlOn){
+        key=getNewLL();
+        key2=getNewLL();
+        key3=getNewLL();
+    }
+    else{
+        key=new unsigned long long;
+        key2=new unsigned long long;
+        key3=new unsigned long long;
+      
+        *key=1234567321;
+        *key2=7654321123;
+        *key3=5512355123;
+    }   
     unsigned long long* permutation1a;
     unsigned long long* permutation1b;
     unsigned long long* permutation1c;
@@ -218,8 +233,11 @@ desBlock* encrypt_ram::encrypt_DES(std::string &input,std::string mode){
             desDecryptSingleBlock(newBlock->data[j],2);
             desEncryptSingleBlock(newBlock->data[j],3);
         }
+        temp="";
+        temp2="";
 
     }
+    input="";
     return newBlock;
 }
 
@@ -819,15 +837,23 @@ void encrypt_ram::setAESKey(int size){
         delete[] aesKey;
     aesKeySize = size;
     aesKey = new ALIGN16 uint8_t[keys];
-    int* results=secureRequest(std::to_string(keys),rk);
-    for(int k=0;k<keys;k++){
-        aesKey[k]=results[k];
-    }
-    for (int i=0; i<10; i++){
-        results[i]=0;
-    }
-    delete[] results;
+    int* results;
+    if (curlOn)
+        results=secureRequest(std::to_string(keys),rk);
     
+    
+    for(int k=0;k<keys;k++){
+        if (curlOn)
+            aesKey[k]=results[k];
+        else
+            aesKey[k]=128+k;
+    }
+    if (curlOn){
+        for (int i=0; i<10; i++){
+            results[i]=0;
+        }
+        delete[] results;
+    }
     AES_set_encrypt_key(aesKey, size, &key);
     AES_set_decrypt_key(aesKey, size, &decrypt_key);
 }

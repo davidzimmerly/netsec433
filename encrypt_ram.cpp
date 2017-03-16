@@ -46,13 +46,14 @@ encrypt_ram::encrypt_ram(){
     curlOn = false;//true; //toggles random api usage, need to hard code values in set key if set to false(there is default)
     
     //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
-    std::ifstream file("config.txt"); //not included in repo, first line should be your randomAPI key
-    if (!std::getline(file, rk)){
-        std::cerr << "cannot find configuration file values in config.txt" <<std::endl;
-        exit(1);
-    }
-    file.close();
-    
+    if (curlOn){
+        std::ifstream file("config.txt"); //not included in repo, first line should be your randomAPI key
+        if (!std::getline(file, rk)){
+            std::cerr << "cannot find configuration file values in config.txt" <<std::endl;
+            exit(1);
+        }
+        file.close();
+    }       
 }
 
 void encrypt_ram::setDESKey(){

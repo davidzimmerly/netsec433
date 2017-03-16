@@ -48,10 +48,41 @@ void encrypt_ram_rsa::generateValues(){
 	}
 }
 
-void encrypt_ram_rsa::eraseStrings(){
-	for (uint i = 0; i < strin.size(); i++){
-		strin.at(i) = 'x';
-		strcp.at(i) = 'x';
+// Tests values before soldiering on
+int encrypt_ram_rsa::testValues(){
+	long long int z1, y1, z2, y2;
+	std::vector<long long int> vec;
+	std::string test1 = "TESTER";
+	std::string test2 = "";
+	
+	for (uint i = 0; i < test1.size(); i++){
+		z1 = static_cast<int>(test1.at(i));
+		y1 = z1;
+		for (uint j = 1; j < e; j++){
+			z1 *= y1;
+			z1 %= n;
+		}
+		vec.push_back(z1);
+	}
+	
+	for (uint i = 0; i < vec.size(); i++){
+		z2 = vec.at(i);
+		y2 = z2;
+		for (uint j = 1; j < d; j++){
+			z2 *= y2;
+			z2 %= n;
+		}
+		test2.push_back(static_cast<char>(z2));
+	}
+	
+	vec.clear();
+	
+	if (test1 == test2){
+		std::cout << "\nApproved values" << std::endl;
+		return 1;
+	} else {
+		std::cout << "\nUnusable values - trying again..." << std::endl;
+		return -1;
 	}
 }
 
@@ -66,7 +97,8 @@ void encrypt_ram_rsa::encryptString(){
 	for (uint i = 0; i < strin.size(); i++) {
 		z = static_cast<int>(strin.at(i));
 		y = z;
-		for (int j = 1; j < e; j++) {
+		strin.at(i) = 'x';
+		for (uint j = 1; j < e; j++) {
 			z *= y;
 			z %= n;
 		}
@@ -78,28 +110,25 @@ void encrypt_ram_rsa::encryptString(){
 
 // Decrypts string character-by-character and displays
 // string if values were usable
-int encrypt_ram_rsa::decryptString(){
+void encrypt_ram_rsa::decryptString(){
 	long long int z2, y2;
-	strcp = "";
+	strin = "";
 
+	std::cerr << "\nDecrypted string: ";
+	
 	for (uint i = 0; i < fn.size(); i++) {
 		z2 = fn.at(i);
 		y2 = z2;
-		for (int j = 1; j < d; j++) {
+		for (uint j = 1; j < d; j++) {
 			z2 *= y2;
 			z2 %= n;
 		}
-		strcp.push_back(static_cast<char>(z2));
+		std::cerr << static_cast<char>(z2);
 	}
 	
 	// Clears vector in case bad values were used
 	fn.clear();
 	
-	if (strin == strcp){
-		std::cerr << strcp << " at " << &strcp << std::endl;
-		return 1;
-	} else {
-		std::cerr << "Bad values - trying again..." << std::endl;
-		return -1;
-	}
+	std::cerr << std::endl;
+	std::cerr.flush();
 }

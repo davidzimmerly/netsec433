@@ -21,7 +21,7 @@ int main()
         }
         if (e.size()>0){
             std::cerr<<"[encrypted items]: "<<std::endl;
-            for (unsigned int o=0; o<e.size(); o++){
+            /*for (unsigned int o=0; o<e.size(); o++){
                 output="";
                 er->decrypt_DES(e[o],"triple");
                 for (unsigned int i = 0; i<e[o]->size; i++){    
@@ -36,7 +36,7 @@ int main()
 
                 e[o]=er->encrypt_DES(output,"triple");
                 output="";
-            }
+            }*/
             
 
             std::cerr<<std::endl;
@@ -96,7 +96,8 @@ int main()
                 done=true;
             }
             else{
-                v.push_back(input);
+                if (input!="r")
+                    v.push_back(input);
                 input="";
             }
         }

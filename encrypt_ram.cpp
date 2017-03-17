@@ -1,41 +1,5 @@
 #include "encrypt_ram.h"
-unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* key){
-    unsigned long long* e;
-    e = permuteEbit(*data);
-    unsigned long long xorOp;
-    xorOp = (*key)^(*e);
-    unsigned int position = 48;
-    unsigned int b[8],col[8],row[8];
-    for (int n=0; n<8; n++){ b[n]=col[n]=row[n]=0; }
-    for (int n=0; n<8; n++){
-        for (int i=0; i<6; i++){
-            if (checkBit(xorOp, position-1-i))
-                b[n] += (unsigned int)pow(2.0,6-i-1);
-            if (i==0)
-                row[n] = (int)encrypt_ram::checkBit(xorOp, position-1-i)*2+(int)encrypt_ram::checkBit(xorOp, position-i-6);
-            else if (i<5)
-                col[n] += (int)encrypt_ram::checkBit(xorOp, position-1-i)*(int)pow(2.0,5-i-1);
-        }
-        position -=6;
-    }
-    unsigned int f_result=0;
-    int position2 = 32-1;
-    for (int x=0; x<8; x++){
-        unsigned int result = function_s(x+1,row[x],col[x]);
-        for (int x=3; x>=0; x--){
-            setBit(f_result,position2--,checkBit(result,x) );
-        }
-    }
-    *e=0;
-    delete e;
-    return permutePbit(f_result);
-}
-
 encrypt_ram::encrypt_ram(){
-    if (!Check_CPU_support_AES()){
-        printf("Cpu does not support AES instruction set. Bailing out.\n");
-        exit(1);
-    }
     aesKey=NULL;
     aesKeySize = 0;
     for (int j=0; j<=16; j++){
@@ -43,9 +7,9 @@ encrypt_ram::encrypt_ram(){
         K2[j]=NULL;
         K3[j]=NULL;
     }
-    curlOn = false;//true; //toggles random api usage, need to hard code values in set key if set to false(there is default)
+    curlOn = false;//true; //toggles random api usage, need to hard code values in DES/AES set key methods if set to false(there is default)
     
-    //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt
+    //NOT IN REPO!!!!!!!!!!!!!!, put randomAPI key line 1 in file called config.txt (will include mine in project tarball)
     if (curlOn){
         std::ifstream file("config.txt"); //not included in repo, first line should be your randomAPI key
         if (!std::getline(file, rk)){
@@ -152,6 +116,38 @@ encrypt_ram::~encrypt_ram(){
             delete K3[x];
         }
     }
+}
+
+unsigned int * encrypt_ram::function_f(unsigned int* data, unsigned long long* key){
+    unsigned long long* e;
+    e = permuteEbit(*data);
+    unsigned long long xorOp;
+    xorOp = (*key)^(*e);
+    unsigned int position = 48;
+    unsigned int b[8],col[8],row[8];
+    for (int n=0; n<8; n++){ b[n]=col[n]=row[n]=0; }
+    for (int n=0; n<8; n++){
+        for (int i=0; i<6; i++){
+            if (checkBit(xorOp, position-1-i))
+                b[n] += (unsigned int)pow(2.0,6-i-1);
+            if (i==0)
+                row[n] = (int)encrypt_ram::checkBit(xorOp, position-1-i)*2+(int)encrypt_ram::checkBit(xorOp, position-i-6);
+            else if (i<5)
+                col[n] += (int)encrypt_ram::checkBit(xorOp, position-1-i)*(int)pow(2.0,5-i-1);
+        }
+        position -=6;
+    }
+    unsigned int f_result=0;
+    int position2 = 32-1;
+    for (int x=0; x<8; x++){
+        unsigned int result = function_s(x+1,row[x],col[x]);
+        for (int x=3; x>=0; x--){
+            setBit(f_result,position2--,checkBit(result,x) );
+        }
+    }
+    *e=0;
+    delete e;
+    return permutePbit(f_result);
 }
 
 void encrypt_ram::desEncryptSingleBlock(unsigned long long & message,uint8_t key){
@@ -974,11 +970,6 @@ unsigned long long* encrypt_ram::getNewLL(){
     }
     delete[] results;
     return returnMe;
-
-
-
-
-//    return encrypt_ram::nstring_to_ull(encrypt_ram::call_curl("https://www.random.org/cgi-bin/randbyte?nbytes=7%26format=d","NONE"));
 }
 
 void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,unsigned char *out,unsigned char ivec1[16],unsigned char ivec2[16],unsigned char ivec3[16],unsigned char ivec4[16],unsigned long length,const unsigned char *key,int nr){
@@ -1014,7 +1005,6 @@ void encrypt_ram::AES_CBC_encrypt_parallelize_4_blocks(const unsigned char *in,u
         feedback2 = _mm_aesenclast_si128 (feedback2,((__m128i*)key)[j]);
         feedback3 = _mm_aesenclast_si128 (feedback3,((__m128i*)key)[j]);
         feedback4 = _mm_aesenclast_si128 (feedback4,((__m128i*)key)[j]);
-
 
         _mm_storeu_si128(&((__m128i*)out)[i*4+0],feedback1);
         _mm_storeu_si128(&((__m128i*)out)[i*4+1],feedback2);
@@ -1185,11 +1175,7 @@ void encrypt_ram::AES_CBC_decrypt_parallelize_4_blocks(const unsigned char *in,u
         data1 = _mm_xor_si128 (data1,feedback1); 
         _mm_storeu_si128 (&((__m128i*)out)[j2],data1); 
         feedback1=last_in; 
-         
     } 
-
-
-
 }
 
 aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
@@ -1200,19 +1186,16 @@ aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
         while (total>aesKeySize){
         length += aesKeySize;
         total -= aesKeySize;
-    
     }
     char plainTextNew[length];
     for (unsigned int u=0; u<length;u++){
         plainTextNew[u]=0;
     }
-
     input.copy(plainTextNew,input.length(),0);
     ALIGN16 uint8_t* formattedNewPlainText = new ALIGN16 uint8_t[length];
     for (unsigned int j=0; j<length; j++){
         formattedNewPlainText[j] = 0;
     }
-    
     //for each letter of string, encode the 8 bit integer equivalent to its char code/ascii value as entry in array
     for (unsigned int j=0; j<len; j++){
         formattedNewPlainText[j] = input[j];
@@ -1243,19 +1226,14 @@ aesBlock* encrypt_ram::encrypt_AES(std::string &input, std::string mode){
         std::cerr <<"Invalid mode for encrypt_AES"<<std::endl;
         exit(1);
     } 
-    
     for (unsigned int x=0; x<length; x++)
         formattedNewPlainText[x]=0;
-
     delete[] formattedNewPlainText;
-    
     returnMe->data=CIPHERTEXT;
     return returnMe;
 }
 std::string* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
-    
-     char* DECRYPTEDTEXT = ( char *)malloc(sizeof(char)*input->size);
-    
+    char* DECRYPTEDTEXT = ( char *)malloc(sizeof(char)*input->size);
     if (mode=="CTR"){
         AES_CTR_encrypt(input->data,( unsigned char *)DECRYPTEDTEXT,CTR128_IV,CTR128_NONCE,input->size,key.KEY,key.nr);
     }
@@ -1278,12 +1256,10 @@ std::string* encrypt_ram::decrypt_AES(aesBlock* input, std::string mode){
 }
 
 void encrypt_ram::checkStringMatch( std::string* string1,  std::string* string2){
-    //for (unsigned int x=0; x<string1->length(); x++){
     if (*string2 != *string1){
         std::cerr<<"strings unequal in AES  mode"<<std::endl;
         exit(1);
     }
-    //}
 }
 
 int* encrypt_ram::secureRequest(std::string elements, std::string& apiKey){

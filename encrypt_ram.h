@@ -39,13 +39,12 @@ typedef struct DES_BLOCK{
 
 class encrypt_ram{
     private:
-
-        //std::string key = "94307803947898";//for initial encryption method XOR
-        void leftShift(unsigned int &input);
-        unsigned int function_s(uint8_t table,uint8_t row, uint8_t column );
+        //DES KEY EXPANSIONS:
         unsigned long long* K[17];
         unsigned long long* K2[17];
         unsigned long long* K3[17];
+        
+        //binary displays
         void displayBinary(unsigned long long input);
         void displayBinary(unsigned int input);
         void displayBinaryX(unsigned int input,unsigned int bits);
@@ -53,6 +52,9 @@ class encrypt_ram{
         void displayBinary(unsigned short input);
         void displayBinary(unsigned long input);
 
+        //des helpers
+        void leftShift(unsigned int &input);
+        unsigned int function_s(uint8_t table,uint8_t row, uint8_t column );
         unsigned int * function_f(unsigned int* data, unsigned long long* key);
         unsigned int * permutePbit(unsigned int &input);
         unsigned long long* permuteKey(unsigned long long &input);
@@ -63,6 +65,10 @@ class encrypt_ram{
         void bitwiseSplit(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits);
         void bitwiseSplit(unsigned int &input, unsigned short &leftDigits, unsigned short &rightDigits);
         void bitwiseSplitDES(unsigned long long &input, unsigned int &leftDigits, unsigned int &rightDigits);
+        void checkDESkeyChoice(uint8_t key);
+        void checkDESMode(std::string mode);
+        
+        //bitwise functions
         void setBit(unsigned long long &input, int bit, bool value){ input |= value << bit; }
         void setBit(unsigned int &input, int bit, bool value){ input |= value << bit; }
         void clearBit(unsigned long long &input, int bit){ input &= ~(1 << bit ); }
@@ -93,14 +99,22 @@ class encrypt_ram{
         const uint8_t s8 [64] = { 13,  2,   8,  4,   6, 15,  11,  1,  10,  9,   3, 14,   5,  0,  12,  7,        1, 15,  13,  8,  10,  3,   7, 4,  12,  5,   6, 11,   0, 14 ,  9, 2,        7, 11,   4,  1,   9, 12,  14,  2,   0,  6,  10, 13,  15,  3,   5,  8,        2,  1,  14,  7,   4, 10,   8, 13,  15, 12,   9,  0,   3,  5,   6, 11};
         const uint8_t p [32] = { 16,   7,  20,  21, 29,  12,  28,  17, 1,  15,  23,  26,5,  18,  31,  10, 2,   8,  24,  14, 32,  27,   3,   9, 19,  13,  30,   6, 22,  11,   4,  25,};
         const uint8_t ipInverse [64] = {40,     8,   48,    16,    56,   24,    64,   32,        39,     7,   47,    15,    55,   23,    63,   31,38,     6,   46,    14,    54,   22,    62,   30,37,     5,   45,    13,    53,   21,    61,   29,36,     4,   44,    12,    52,   20,    60,   28,35,     3,   43,    11,    51,   19,    59,   27,34,     2,   42,    10,    50,   18,    58,   26,33,     1,   41,     9,    49,   17,    57,   25};
+        
+        //intialization vectors
         ALIGN16 uint8_t CBC_IV[16] = {0x00,0x4c,0x02,0x33,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
         ALIGN16 uint8_t CBC_IVb[16] = {0x0a,0xae,0x12,0x76,0xa4,0xd5,0xa6,0xf7,0xd8,0xa9,0x1a,0x8b,0x4c,0x3d,0x1e,0x3f};
         ALIGN16 uint8_t CBC_IVc[16] = {0x0d,0x24,0x22,0x36,0xb4,0xe5,0xb6,0xe7,0xe8,0xd9,0x2a,0x7b,0x5c,0x2d,0x2e,0x2f};
         ALIGN16 uint8_t CBC_IVd[16] = {0x0f,0x65,0x32,0x35,0xc4,0xf5,0xc6,0xd7,0xf8,0xf9,0x3a,0x6b,0x6c,0x1d,0x3e,0x1f};
-
-
         ALIGN16 uint8_t CTR128_IV[8] = {0xC0,0x54,0x3B,0x59,0xDA,0x48,0xD9,0x0B};
         ALIGN16 uint8_t CTR128_NONCE[4] = {0x00,0x6C,0xB6,0xDB};
+        
+        //aes key
+        AES_KEY key, decrypt_key;
+        ALIGN16 uint8_t* aesKey;
+        int aesKeySize;
+        
+
+        //aes helpers
         void AES_128_Key_Expansion (const unsigned char *userkey,const unsigned char *key);
         void AES_ECB_encrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
         void AES_ECB_decrypt(const unsigned char *in,unsigned char *out,unsigned long length,const char *key,int number_of_rounds);
@@ -122,32 +136,34 @@ class encrypt_ram{
         void desEncryptSingleBlock(unsigned long long & message,uint8_t key);
         void desDecryptSingleBlock(unsigned long long & message,uint8_t key);
         __m128i AES_128_ASSIST (__m128i temp1, __m128i temp2);
+        int Check_CPU_support_AES();
+        
+
+        bool curlOn;
+        //netcode helpers
         unsigned long long* getNewLL();
-        AES_KEY key, decrypt_key;
-        ALIGN16 uint8_t* aesKey;
-        int aesKeySize;
         static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
         std::string rk;//random.api key        
         std::string call_curl(std::string address, std::string arguments);
         void removeCharFromString(char c,std::string &str);
-        int Check_CPU_support_AES();
         int* secureRequest(std::string elements, std::string& apiKey);
-        void checkDESkeyChoice(uint8_t key);
-        void checkDESMode(std::string mode);
-        bool curlOn;
+        
         
     public:
         encrypt_ram();
         ~encrypt_ram();
         bool anyKey();
+        
+        //des string encoding methods
         std::string string_to_nstring(std::string &input);
         unsigned long long* nstring_to_ull(std::string input);
         std::string ull_to_string(unsigned long long &input);
         void checkStringMatch(std::string* string1,  std::string* string2);
+        
         //simple XOR encrypt with key (key should be as long as input, ensure key size on update)
-        std::string keyC = "12345";
+        /*std::string keyC = "12345";
         void encrypt(std::string &message){for (unsigned int x = 0; x < message.size(); x++) { message[x] ^= keyC[x]; }        }
-        void decrypt(std::string &message){encrypt(message);} 
+        void decrypt(std::string &message){encrypt(message);} */
 
         //AES//
         void setAESKey(int size);
